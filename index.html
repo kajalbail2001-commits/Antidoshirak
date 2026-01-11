@@ -1,0 +1,196 @@
+
+<!DOCTYPE html>
+<html lang="ru" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Anti-Doshirak // Протокол</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              cyber: {
+                black: '#050505',
+                dark: '#0a0a0a',
+                panel: '#121212',
+                neon: '#ccff00', // Acid Lime
+                alert: '#ff003c', // Cyberpunk Red
+                dim: '#4b5563',
+                tech: '#00f0ff'   // Cyan
+              }
+            },
+            fontFamily: {
+              mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', "Liberation Mono", "Courier New", 'monospace'],
+              sans: ['system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      body {
+        background-color: #050505;
+        color: #e5e5e5;
+        -webkit-font-smoothing: antialiased;
+      }
+      /* Custom Scrollbar for Cyberpunk feel */
+      ::-webkit-scrollbar {
+        width: 4px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #0a0a0a;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #333;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #ccff00;
+      }
+
+      /* SCANLINES OVERLAY */
+      .scanlines {
+        background: linear-gradient(
+          to bottom,
+          rgba(255,255,255,0),
+          rgba(255,255,255,0) 50%,
+          rgba(0,0,0,0.2) 50%,
+          rgba(0,0,0,0.2)
+        );
+        background-size: 100% 4px;
+        position: fixed;
+        left: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        pointer-events: none;
+        z-index: 9999;
+        opacity: 0.4;
+      }
+      
+      /* GLITCH EFFECT - SLOW MODE */
+      .glitch-text {
+        position: relative;
+        color: white;
+      }
+      .glitch-text::before,
+      .glitch-text::after {
+        content: attr(data-text);
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0.5; /* Reduced opacity to be less distracting */
+      }
+      .glitch-text::before {
+        left: 2px;
+        text-shadow: -1px 0 #ff003c;
+        clip-path: inset(44% 0 61% 0);
+        animation: glitch-anim-1 12s infinite linear alternate-reverse; /* Slowed to 12s */
+      }
+      .glitch-text::after {
+        left: -2px;
+        text-shadow: 1px 0 #00f0ff;
+        clip-path: inset(55% 0 10% 0);
+        animation: glitch-anim-2 15s infinite linear alternate-reverse; /* Slowed to 15s */
+      }
+      @keyframes glitch-anim-1 {
+        0% { clip-path: inset(20% 0 80% 0); }
+        20% { clip-path: inset(60% 0 10% 0); }
+        40% { clip-path: inset(40% 0 50% 0); }
+        60% { clip-path: inset(80% 0 5% 0); }
+        80% { clip-path: inset(10% 0 70% 0); }
+        100% { clip-path: inset(30% 0 20% 0); }
+      }
+      @keyframes glitch-anim-2 {
+        0% { clip-path: inset(10% 0 60% 0); }
+        20% { clip-path: inset(30% 0 10% 0); }
+        40% { clip-path: inset(70% 0 20% 0); }
+        60% { clip-path: inset(20% 0 40% 0); }
+        80% { clip-path: inset(50% 0 30% 0); }
+        100% { clip-path: inset(5% 0 80% 0); }
+      }
+
+      /* PRINT STYLES FOR PDF EXPORT */
+      @media print {
+        @page {
+            margin: 0;
+            size: auto;
+        }
+        .scanlines { display: none !important; } /* Hide scanlines on print */
+        html, body {
+          background-color: #ffffff !important;
+          color: #000000 !important;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          height: auto !important;
+          min-height: 0 !important;
+        }
+        .no-print {
+          display: none !important;
+        }
+        /* Invert generic text colors for print */
+        .text-gray-200, .text-gray-300, .text-gray-400, .text-gray-500, .text-white {
+          color: #000000 !important;
+        }
+        .text-cyber-dim {
+          color: #666666 !important;
+        }
+        /* Keep accents but make them readable on white */
+        .text-cyber-neon {
+          color: #000000 !important; /* Neon yellow is bad on white, use black for text */
+        }
+        .text-cyber-tech {
+          color: #004455 !important;
+        }
+        .bg-cyber-black, .bg-zinc-900, .bg-black {
+          background-color: #ffffff !important;
+          border: 1px solid #ddd !important;
+          color: #000000 !important;
+        }
+        /* Charts */
+        .recharts-wrapper {
+          filter: invert(1) hue-rotate(180deg);
+        }
+        /* Hide fixed elements */
+        .fixed {
+          position: static !important;
+          display: none !important;
+        }
+        /* Layout adjustments */
+        .min-h-screen {
+          min-height: 0 !important;
+          height: auto !important;
+        }
+        .animate-fade-in {
+          animation: none !important;
+          opacity: 1 !important;
+        }
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "@google/genai": "https://esm.sh/@google/genai",
+    "uuid": "https://esm.sh/uuid@10.0.0",
+    "react": "https://esm.sh/react@18.3.1",
+    "react/": "https://esm.sh/react@18.3.1/",
+    "react-dom": "https://esm.sh/react-dom@18.3.1",
+    "react-dom/": "https://esm.sh/react-dom@18.3.1/",
+    "recharts": "https://esm.sh/recharts@2.12.7?external=react,react-dom",
+    "vite": "https://esm.sh/vite@^7.3.1",
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2",
+    "html2canvas": "https://esm.sh/html2canvas@1.4.1"
+  }
+}
+</script>
+</head>
+  <body>
+    <div class="scanlines"></div>
+    <div id="root"></div>
+    <script type="module" src="./index.tsx"></script>
+  </body>
+</html>
