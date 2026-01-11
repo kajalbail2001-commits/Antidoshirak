@@ -388,4 +388,258 @@ const Proposal: React.FC<ProposalProps> = ({
 
       {/* --- HERO TOTAL --- */}
       <div className="bg-zinc-900/50 border border-cyber-dim p-6 text-center relative overflow-hidden mx-4 sm:mx-0 print:border-4 print:border-black print:bg-white print:p-8 print:mb-8 print:shadow-none">
-        <div className="absolute top-0
+        <div className="absolute top-0 left-0 w-1 h-full bg-cyber-neon print:hidden"></div>
+        <p className="text-xs font-mono text-gray-500 uppercase tracking-widest mb-1 print:text-black print:font-bold">Итоговая Стоимость Проекта</p>
+        <h1 className={`text-4xl sm:text-5xl font-mono font-black drop-shadow-[0_0_10px_rgba(204,255,0,0.3)] print:text-black print:drop-shadow-none print:text-6xl print:my-4 ${isEmpty ? 'text-gray-500' : 'text-cyber-neon'}`}>
+          {isEmpty ? "NO ACTIVE OFFER" : formatCurrency(total)}
+        </h1>
+        <div className="mt-2 flex justify-center gap-2 text-[10px] font-mono text-gray-500 print:text-black print:text-xs">
+           <span className="">СЛОЖНОСТЬ: x{safeRisk}</span>
+           <span className="">ПРИОРИТЕТ: x{safeUrgency}</span>
+           <span className="hidden print:inline-block border border-black px-3 py-1 font-bold">Timeline: {timelineString}</span>
+        </div>
+      </div>
+
+      {/* --- ITEMIZED TABLE --- */}
+      {!isEmpty && (
+      <div className="px-4 sm:px-0 mb-8 print:px-0">
+          <h3 className="text-sm font-mono text-gray-400 mb-3 print:text-black print:font-bold uppercase print:mb-2 print:border-b print:border-black print:pb-1">Scope of Work (Детализация)</h3>
+          <table className="w-full text-xs font-mono text-left text-gray-300 print:text-black">
+            <thead className="text-[10px] text-gray-500 uppercase bg-zinc-900/50 print:bg-gray-100 print:text-black print:font-bold">
+                <tr>
+                    <th className="p-2 print:border print:border-gray-300">Инструмент / Услуга</th>
+                    <th className="p-2 text-right print:border print:border-gray-300">Объем</th>
+                    <th className="p-2 text-right hidden sm:table-cell print:table-cell print:border print:border-gray-300">Стоимость</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr className="border-b border-zinc-800 print:border print:border-gray-300">
+                    <td className="p-2 font-bold print:border-r print:border-gray-300">Специалист (Production & Engineering)</td>
+                    <td className="p-2 text-right print:border-r print:border-gray-300">{safeLaborHours} ч.</td>
+                    <td className="p-2 text-right">{formatCurrency(baseLaborCost)}</td>
+                </tr>
+                {items.map((item, idx) => (
+                    <tr key={idx} className="border-b border-zinc-800 print:border print:border-gray-300">
+                        <td className="p-2 print:border-r print:border-gray-300">
+                            <span className="block text-white print:text-black font-semibold">{item.name}</span>
+                            <span className="text-[9px] text-gray-500 print:text-gray-600">{item.category.toUpperCase()} Module</span>
+                        </td>
+                        <td className="p-2 text-right print:border-r print:border-gray-300">{item.amount} {item.unit.substr(0,3)}</td>
+                        <td className="p-2 text-right">
+                            {formatCurrency(item.amount * item.lightning_price * safeCurrencyRate * AI_BUFFER_MULTIPLIER)}
+                        </td>
+                    </tr>
+                ))}
+            </tbody>
+          </table>
+      </div>
+      )}
+
+      {/* --- ARGUMENTS --- */}
+      <div className="grid grid-cols-1 gap-4 px-4 sm:px-0 print:grid-cols-2 print:gap-8 print:mb-8 print:px-0">
+        <div className="border border-zinc-800 bg-zinc-900/50 p-4 rounded-sm print:border print:border-gray-300 print:bg-white">
+           <h4 className="text-white font-bold text-sm mb-2 flex items-center print:text-black uppercase">
+             <span className="text-cyber-alert mr-2 print:hidden">🛡</span> 
+             Надежность (Risk x{safeRisk})
+           </h4>
+           <p className="text-xs text-gray-400 leading-relaxed mb-2 print:text-black">
+             В стоимость заложен коэффициент <strong>x{safeRisk}</strong>. Это гарантия результата.
+             Мы покрываем риски "галлюцинаций" нейросетей, технические сбои и необходимость перегенерации (отбраковка до 70%).
+           </p>
+        </div>
+
+        {safeUrgency > 1.0 ? (
+          <div className="border border-cyber-tech/50 bg-cyber-tech/10 p-4 rounded-sm print:border print:border-gray-300 print:bg-white">
+            <h4 className="text-cyber-tech font-bold text-sm mb-2 flex items-center print:text-black uppercase">
+              <span className="mr-2 print:hidden">🚀</span> 
+              Срочность (Urgency x{safeUrgency})
+            </h4>
+            <p className="text-xs text-gray-300 leading-relaxed print:text-black">
+              Проект реализуется в приоритетном режиме. 
+              {safeUrgency >= 2.0 
+                ? " Включает работу в выходные и ночное время (Crunch Mode)."
+                : " Fast Track: Выделенный ресурс команды."
+              }
+            </p>
+          </div>
+        ) : (
+          <div className="border border-zinc-800 p-4 rounded-sm print:border print:border-gray-300 print:bg-white">
+             <h4 className="text-gray-400 font-bold text-sm mb-2 flex items-center print:text-black uppercase">
+                Стандартный Режим
+             </h4>
+             <p className="text-xs text-gray-500 leading-relaxed print:text-black">
+                Работы выполняются в штатном порядке согласно графику. Без наценок.
+             </p>
+          </div>
+        )}
+      </div>
+
+      {/* --- CHARTS --- */}
+      <div className="bg-zinc-900 border border-zinc-800 p-4 print:hidden mx-4 sm:mx-0">
+           <h4 className="text-gray-400 font-mono text-xs mb-4 uppercase text-center">СТРУКТУРА ЦЕННОСТИ</h4>
+           <div className="h-40 w-full relative flex items-center justify-center">
+             {!isEmpty && total > 0 ? (
+             <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={data}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={45}
+                    outerRadius={65}
+                    paddingAngle={4}
+                    dataKey="value"
+                    stroke="none"
+                  >
+                    {data.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#050505', border: '1px solid #333', borderRadius: '4px' }}
+                    itemStyle={{ color: '#fff', fontSize: '11px', fontFamily: 'monospace' }}
+                    formatter={(value: number) => formatCurrency(value)}
+                  />
+                </PieChart>
+             </ResponsiveContainer>
+             ) : (
+                 <div className="text-xs font-mono text-gray-600">NO DATA AVAILABLE</div>
+             )}
+           </div>
+           {!isEmpty && (
+           <div className="flex flex-wrap justify-center gap-4 mt-2">
+              <div className="flex items-center gap-2">
+                 <div className="w-2 h-2 rounded-sm bg-[#ccff00]"></div>
+                 <span className="text-[10px] font-mono text-gray-400 uppercase">AI Res</span>
+              </div>
+              <div className="flex items-center gap-2">
+                 <div className="w-2 h-2 rounded-sm bg-[#00f0ff]"></div>
+                 <span className="text-[10px] font-mono text-gray-400 uppercase">Labor</span>
+              </div>
+              {premiumValue > 100 && (
+                <div className="flex items-center gap-2">
+                   <div className="w-2 h-2 rounded-sm bg-[#ff003c]"></div>
+                   <span className="text-[10px] font-mono text-gray-400 uppercase">Multiplier</span>
+                </div>
+              )}
+           </div>
+           )}
+      </div>
+
+      {/* --- FINANCIAL SUMMARY --- */}
+      {!isEmpty && (
+      <div className="border-t border-cyber-dim pt-4 px-4 sm:px-0 print:border-black print:mt-4 print:px-0">
+        <h3 className="text-sm font-mono text-gray-400 mb-3 print:text-black print:font-bold uppercase">Финансовое Резюме</h3>
+        <table className="w-full text-xs font-mono text-left text-gray-300 print:text-black">
+          <tbody>
+            <tr className="border-b border-zinc-800 print:border-gray-300">
+              <td className="py-2">Production Costs (Ресурсы + Работа)</td>
+              <td className="py-2 text-right">{formatCurrency(subtotal)}</td>
+            </tr>
+            {premiumValue > 100 && (
+              <tr className="border-b border-zinc-800 text-cyber-alert print:text-black print:border-gray-300">
+                <td className="py-2">Multipliers (Risk & Urgency Premium)</td>
+                <td className="py-2 text-right">{formatCurrency(premiumValue)}</td>
+              </tr>
+            )}
+             <tr className="font-bold text-white print:text-black text-sm">
+              <td className="py-4 pt-4">ИТОГО К ОПЛАТЕ</td>
+              <td className="py-4 text-right pt-4">{formatCurrency(total)}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      )}
+
+      {/* --- FOOTER --- */}
+      <div className="hidden print:block mt-16 pt-8 border-t-2 border-black">
+          <div className="grid grid-cols-2 gap-16">
+              <div>
+                  <p className="text-xs uppercase font-bold mb-8 text-black">ИСПОЛНИТЕЛЬ:</p>
+                  <div className="h-px bg-black w-full mb-2"></div>
+                  <p className="text-xs text-gray-500">Подпись / М.П.</p>
+              </div>
+              <div>
+                  <p className="text-xs uppercase font-bold mb-8 text-black">ЗАКАЗЧИК:</p>
+                  <div className="h-px bg-black w-full mb-2"></div>
+                  <p className="text-xs text-gray-500">Подпись / М.П.</p>
+              </div>
+          </div>
+          <p className="text-[9px] text-gray-400 mt-8 text-center font-mono">
+              Generated by Anti-Doshirak Protocol // {currentDate}
+          </p>
+      </div>
+
+      {/* --- WATERMARK --- */}
+      <div className="mt-12 mb-4 px-4 sm:px-0 flex justify-end opacity-40 hover:opacity-100 transition-opacity print:hidden">
+          <a 
+            href="https://t.me/neuroskam" 
+            target="_blank" 
+            rel="noreferrer" 
+            className="text-[10px] font-mono text-gray-600 hover:text-cyber-tech flex items-center gap-2 group decoration-0"
+          >
+             <span className="w-1.5 h-1.5 bg-gray-700 rounded-full group-hover:bg-cyber-tech transition-colors"></span>
+             dev by @neuroskam
+          </a>
+      </div>
+
+      {/* --- ACTIONS --- */}
+      {!isClientMode && (
+        <div className="grid grid-cols-2 gap-2 no-print px-4 sm:px-0 no-screenshot">
+            <div className="col-span-2 flex gap-2">
+                {onMarketCheck && (
+                    <button 
+                    onClick={onMarketCheck}
+                    className="flex-1 bg-zinc-800 text-cyber-tech border border-cyber-dim font-bold py-4 font-mono uppercase tracking-widest hover:border-cyber-tech hover:bg-zinc-700 transition-all flex justify-center items-center gap-2"
+                    >
+                    <span className="hidden sm:inline">⚖️</span> Калибровка
+                    </button>
+                )}
+                {onShareClick && (
+                    <button 
+                    onClick={onShareClick}
+                    className="flex-[2] bg-cyber-neon text-black font-bold py-4 font-mono uppercase tracking-widest hover:shadow-[0_0_15px_rgba(204,255,0,0.4)] transition-all flex justify-center items-center gap-2"
+                    >
+                        <span>🚀</span> ОТПРАВИТЬ КЛИЕНТУ
+                    </button>
+                )}
+            </div>
+            <button 
+                onClick={() => setShowTextModal(true)}
+                className="bg-zinc-900 text-gray-300 border border-zinc-700 font-bold py-3 font-mono uppercase text-xs hover:text-white hover:border-white transition-all"
+            >
+                TXT REPORT
+            </button>
+            <button 
+                disabled={isExporting}
+                onClick={handleScreenshot}
+                className="bg-zinc-900 text-gray-300 border border-zinc-700 font-bold py-3 font-mono uppercase text-xs hover:text-white hover:border-white transition-all disabled:opacity-50"
+            >
+                {isExporting ? '...' : 'СКАЧАТЬ PNG'}
+            </button>
+        </div>
+      )}
+
+      {isClientMode && (
+        <div className="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black via-black to-transparent z-50 max-w-md mx-auto flex gap-3 no-print no-screenshot">
+           <button 
+             onClick={onTender}
+             disabled={isEmpty}
+             className="flex-1 border border-cyber-dim text-gray-300 font-bold py-3 font-mono uppercase text-xs hover:border-cyber-tech hover:text-cyber-tech transition-all disabled:opacity-30 disabled:hover:border-cyber-dim disabled:hover:text-gray-300 disabled:cursor-not-allowed"
+           >
+             СРАВНИТЬ ЦЕНЫ
+           </button>
+           <button 
+             onClick={handleApproveClick}
+             disabled={isEmpty}
+             className="flex-1 bg-cyber-neon text-black font-bold py-3 font-mono uppercase text-xs hover:shadow-[0_0_15px_rgba(204,255,0,0.4)] transition-all disabled:opacity-30 disabled:hover:shadow-none disabled:cursor-not-allowed"
+           >
+             ПРИНЯТЬ ПРЕДЛОЖЕНИЕ
+           </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default Proposal;
