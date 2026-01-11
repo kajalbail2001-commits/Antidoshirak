@@ -1,7 +1,9 @@
 import { Tool } from '../types';
 
 // MODELS
-const DEFAULT_MODEL = "qwen/qwen-2.5-coder-32b-instruct:free";
+// STRICTLY QWEN 3 CODER FREE as requested.
+// The ':free' suffix is crucial for $0 balance accounts on OpenRouter.
+const DEFAULT_MODEL = "qwen/qwen3-coder:free"; 
 
 interface ParsedItem {
   tool_id: string;
@@ -52,13 +54,16 @@ const deduplicateTools = (items: ParsedItem[]): ParsedItem[] => {
 };
 
 const makeServerlessRequest = async (systemPrompt: string, userContent: any) => {
-    // We now call our own Netlify Function instead of OpenRouter directly
-    // This keeps the API KEY hidden on the server side.
+    // Calling the Netlify function proxy
     const endpoint = "/.netlify/functions/analyze";
     
     try {
-        console.log(`[AI] Calling Serverless Proxy...`);
+        console.log(`[AI] Calling Qwen (${DEFAULT_MODEL})...`);
         
+        // Timeout controller to catch hangs before the browser defaults
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 9500); // 9.5s hard limit (Netlify kills at 10s)
+
         const response = await fetch(endpoint, {
             method: "POST",
             headers: {
@@ -70,17 +75,30 @@ const makeServerlessRequest = async (systemPrompt: string, userContent: any) => 
                     { role: "system", content: systemPrompt },
                     { role: "user", content: userContent }
                 ]
-            })
+            }),
+            signal: controller.signal
         });
+
+        clearTimeout(timeoutId);
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.error || `Server error: ${response.status}`);
+            const errorMessage = errorData.details || errorData.error || `Server error: ${response.status}`;
+            console.error("[AI] Server Error Detail:", errorData);
+            
+            // If it's a 502, it's likely a timeout from Netlify
+            if (response.status === 502) {
+                throw new Error("Time Limit Exceeded. Qwen думал слишком долго.");
+            }
+            throw new Error(errorMessage);
         }
 
         return await response.json();
 
     } catch (e: any) {
+        if (e.name === 'AbortError') {
+             throw new Error("Timeout: Qwen не успел ответить за 10 сек.");
+        }
         console.error("[AI] Request failed:", e);
         throw new Error(e.message || "AI Service Unavailable");
     }
@@ -89,43 +107,26 @@ const makeServerlessRequest = async (systemPrompt: string, userContent: any) => 
 export const parseBriefWithGemini = async (
   brief: string,
   availableTools: Tool[],
-  _apiKey?: string, // Legacy param, ignored now
+  _apiKey?: string, // Legacy
   attachment: Attachment | null = null
 ): Promise<ParsedItem[]> => {
   
+  // Minimalist tool list to save tokens
   const toolsInfo = availableTools.map(t => ({
     id: t.id,
-    name: t.name,
-    unit: t.unit,
-    description: `Category: ${t.category}. Unit: ${t.unit}. Cost: ${t.lightning_price} lightning/unit.`
+    desc: `${t.name} (${t.category})`
   }));
 
+  // ULTRA-SHORT PROMPT to save generation time and avoid 502 Timeouts
   const systemPrompt = `
-    ROLE: PESSIMISTIC AI PRODUCER. 
-    TASK: DECONSTRUCT request into AI tool operations.
-    
+    TASK: Map request to tools.
     TOOLS: ${JSON.stringify(toolsInfo)}
-
     RULES:
-    1. BREAKDOWN: Video = 'video' tool + 'audio' tool.
-    
-    2. MATH (GENERATORS - Image/Video/Song):
-       - User wants "1 result" -> Estimate 4 ATTEMPTS.
-       - Formula: (Target Items) * 4 = Count.
-       - FOR VIDEO CLIPS: 1 clip = 5 seconds.
-       - EXAMPLE: "1.5 minute video" = 90 seconds. 
-         90s / 5s = 18 clips.
-         18 clips * 4 attempts = 72 generations.
-    
-    3. MATH (STREAMING - Avatar/LipSync):
-       - User wants "Duration" -> Count = SECONDS.
-       - DO NOT MULTIPLY SECONDS.
-    
-    EXAMPLE: "15s video" -> 3 clips (5s each) * 4 attempts = 12 'video_runway_gen3'.
-    EXAMPLE: "15s avatar" -> 15 'avatar_heygen'.
-    
-    OUTPUT: JSON Array ONLY. Format: [{"tool_id": "string", "count": number, "comment": "string"}]
-    IMPORTANT: Return raw JSON only. Do not wrap in markdown code blocks.
+    1. Video=Video Gen+Audio.
+    2. 1 Video Result = 4 Gens.
+    3. Video Clip = 5s. (90s = 18 clips * 4 = 72 gens).
+    4. Streaming/Avatar = Duration in Seconds.
+    OUTPUT: JSON Array only. [{"tool_id": "...", "count": 1}]
   `;
 
   let userContent: any = brief;
@@ -133,7 +134,7 @@ export const parseBriefWithGemini = async (
   // Handle Multimodal (Images) if present
   if (attachment) {
     userContent = [
-      { type: "text", text: brief || "Analyze this image/screenshot and break down the AI production components required to recreate or produce it." },
+      { type: "text", text: brief || "Analyze image. List tools needed to recreate it." },
       { 
         type: "image_url", 
         image_url: { 
@@ -157,27 +158,26 @@ export const parseBriefWithGemini = async (
     try {
         parsed = JSON.parse(cleanJson);
     } catch (e) {
-        console.warn("JSON Parse failed, attempting to extract array via Regex", cleanJson);
+        console.warn("JSON Parse failed, attempting regex extraction", cleanJson);
         const match = cleanJson.match(/\[.*\]/s);
         if (match) {
             try {
                 parsed = JSON.parse(match[0]);
             } catch (innerE) {
-                throw new Error("Failed to parse extracted JSON array.");
+                throw new Error("AI returned invalid JSON.");
             }
         } else {
-             // Fallback for Qwen Coder sometimes outputting Python list syntax
+             // Fallback for Python-style lists
              const pythonMatch = cleanJson.match(/\[.*\]/s);
              if (pythonMatch) {
                  try {
-                     // Very naive python list parser (replace ' with ")
                      const jsonLike = pythonMatch[0].replace(/'/g, '"').replace(/True/g, 'true').replace(/False/g, 'false');
                      parsed = JSON.parse(jsonLike);
                  } catch (pyError) {
-                    throw new Error("Could not parse AI response as JSON.");
+                    throw new Error("AI returned unparsable data.");
                  }
              } else {
-                throw new Error("Could not parse AI response as JSON.");
+                throw new Error("AI returned no data.");
              }
         }
     }
