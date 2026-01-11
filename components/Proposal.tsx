@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { ProjectItem, RiskLevel, UrgencyLevel } from '../types';
 import { AI_BUFFER_MULTIPLIER, RISK_LABELS, URGENCY_LABELS } from '../constants';
@@ -18,7 +17,7 @@ interface ProposalProps {
   onTender?: () => void;
   onMarketCheck?: () => void;
   onShareClick?: () => void; 
-  onFork?: () => void; // New Prop
+  onFork?: () => void;
   
   // Branding
   clientName?: string;
@@ -34,6 +33,8 @@ const Proposal: React.FC<ProposalProps> = ({
 }) => {
   
   const [showTextModal, setShowTextModal] = useState(false);
+  // Новое состояние для показа картинки внутри сайта (обход блокировки скачивания)
+  const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [isExporting, setIsExporting] = useState(false);
   const [proposalStatus, setProposalStatus] = useState<'viewing' | 'accepted'>('viewing');
   const proposalRef = useRef<HTMLDivElement>(null);
@@ -92,29 +93,37 @@ const Proposal: React.FC<ProposalProps> = ({
     
     // Ensure clean state without scroll issues
     window.scrollTo(0, 0);
-    // Allow images to render fully
     await new Promise(r => setTimeout(r, 500));
 
     try {
         const canvas = await html2canvas(proposalRef.current, {
-            backgroundColor: '#050505', // Preserve dark theme
-            scale: 3, // Increased quality (High DPI)
-            useCORS: true, // Crucial for Imgur images
+            backgroundColor: '#050505',
+            scale: 2, // Оптимизируем, чтобы не крашилось на мобилках
+            useCORS: true,
             allowTaint: true,
             logging: false,
-            ignoreElements: (element) => {
-                // Ignore elements with specific class (buttons)
-                return element.classList.contains('no-screenshot');
-            }
+            ignoreElements: (element) => element.classList.contains('no-screenshot')
         });
 
-        const link = document.createElement('a');
-        link.download = `Estimate_${clientName || 'Project'}_${new Date().toISOString().split('T')[0]}.png`;
-        link.href = canvas.toDataURL('image/png');
-        link.click();
+        const imgData = canvas.toDataURL('image/png');
+        
+        // Определяем, мобилка это или десктоп
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+        if (isMobile) {
+            // ДЛЯ ТЕЛЕГРАМА И МОБИЛОК: Показываем картинку, а не качаем файл
+            setGeneratedImage(imgData);
+        } else {
+            // ДЛЯ КОМПА: Стандартное скачивание
+            const link = document.createElement('a');
+            link.download = `Estimate_${clientName || 'Project'}_${new Date().toISOString().split('T')[0]}.png`;
+            link.href = imgData;
+            link.click();
+        }
+
     } catch (error) {
         console.error("Screenshot failed:", error);
-        alert("Не удалось создать скриншот. Убедитесь, что ссылка на картинку прямая (заканчивается на .jpg/.png).");
+        alert("Не удалось создать скриншот. Возможно, браузер блокирует действие.");
     } finally {
         setIsExporting(false);
     }
@@ -171,7 +180,6 @@ const Proposal: React.FC<ProposalProps> = ({
   if (proposalStatus === 'accepted') {
     return (
         <div className="min-h-screen bg-cyber-black flex flex-col items-center justify-center p-4 animate-fade-in text-center relative overflow-hidden">
-             {/* Background Grid */}
              <div className="absolute inset-0 bg-[linear-gradient(rgba(10,10,10,1)_1px,transparent_1px),linear-gradient(90deg,rgba(10,10,10,1)_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,#000_70%,transparent_100%)] -z-10 opacity-20"></div>
 
             <div className="max-w-md w-full border border-cyber-neon bg-zinc-900/80 p-8 relative shadow-[0_0_50px_rgba(204,255,0,0.15)] backdrop-blur-md">
@@ -200,9 +208,9 @@ const Proposal: React.FC<ProposalProps> = ({
                         target="_blank" 
                         rel="noreferrer"
                         className="block w-full bg-cyber-neon text-black font-bold py-4 font-mono uppercase tracking-widest hover:shadow-[0_0_25px_rgba(204,255,0,0.6)] hover:bg-white transition-all mb-6"
-                     >
+                      >
                         ОТКРЫТЬ ЧАТ С ИСПОЛНИТЕЛЕМ
-                     </a>
+                      </a>
                 ) : (
                     <div className="p-4 border border-dashed border-zinc-700 text-gray-500 font-mono text-xs mb-6">
                         КОНТАКТЫ ИСПОЛНИТЕЛЯ НЕ УКАЗАНЫ.<br/>ИСПОЛЬЗУЙТЕ СТАНДАРТНЫЙ КАНАЛ СВЯЗИ.
@@ -227,6 +235,31 @@ const Proposal: React.FC<ProposalProps> = ({
   return (
     <div ref={proposalRef} className={`space-y-6 pb-32 animate-fade-in ${isClientMode ? 'pt-0' : ''} bg-cyber-black min-h-screen text-gray-300 print:bg-white print:text-black print:pb-0 print:space-y-4 print:block`}>
       
+      {/* IMAGE PREVIEW MODAL (FOR MOBILE/TELEGRAM) */}
+      {generatedImage && (
+        <div className="fixed inset-0 z-[150] bg-black/95 flex flex-col items-center justify-center p-4 backdrop-blur-md no-screenshot animate-fade-in">
+             <div className="w-full max-w-lg flex flex-col items-center">
+                <div className="text-center mb-4">
+                     <p className="text-cyber-neon font-mono font-bold text-lg animate-pulse">СНИМОК СГЕНЕРИРОВАН</p>
+                     <p className="text-xs text-gray-400 font-mono mt-1">
+                        Нажмите на изображение и удерживайте,<br/>чтобы сохранить его в галерею.
+                     </p>
+                </div>
+                
+                <div className="border border-cyber-dim shadow-[0_0_30px_rgba(204,255,0,0.1)] mb-6 max-h-[60vh] overflow-y-auto">
+                    <img src={generatedImage} alt="Estimate Preview" className="w-full h-auto block" />
+                </div>
+
+                <button 
+                    onClick={() => setGeneratedImage(null)}
+                    className="bg-white text-black font-mono font-bold py-3 px-8 uppercase hover:bg-cyber-neon transition-colors"
+                >
+                    ЗАКРЫТЬ
+                </button>
+             </div>
+        </div>
+      )}
+
       {/* TEXT REPORT MODAL */}
       {showTextModal && (
         <div className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4 print:hidden backdrop-blur-sm no-screenshot">
@@ -236,7 +269,7 @@ const Proposal: React.FC<ProposalProps> = ({
                     <button onClick={() => setShowTextModal(false)} className="text-gray-500 hover:text-white font-mono">[X]</button>
                 </div>
                 <div className="flex-1 overflow-hidden relative border border-zinc-700 bg-black">
-                     <textarea 
+                      <textarea 
                         readOnly 
                         value={generateTextReport()} 
                         className="w-full h-full bg-black text-cyber-tech font-mono text-xs p-4 focus:outline-none resize-none"
@@ -245,8 +278,21 @@ const Proposal: React.FC<ProposalProps> = ({
                 <div className="flex gap-4 mt-4 shrink-0">
                     <button 
                         onClick={() => {
-                            navigator.clipboard.writeText(generateTextReport());
-                            alert("Отчет скопирован в буфер обмена!");
+                            // Using safe copy method here too
+                            const text = generateTextReport();
+                            try {
+                                const ta = document.createElement('textarea');
+                                ta.value = text;
+                                ta.style.position = 'fixed';
+                                ta.style.left = '-9999px';
+                                document.body.appendChild(ta);
+                                ta.select();
+                                document.execCommand('copy');
+                                document.body.removeChild(ta);
+                                alert("Отчет скопирован!");
+                            } catch (e) {
+                                alert("Скопируйте текст вручную.");
+                            }
                             setShowTextModal(false);
                         }} 
                         className="flex-1 bg-cyber-neon text-black font-bold py-3 hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all font-mono uppercase"
@@ -371,244 +417,4 @@ const Proposal: React.FC<ProposalProps> = ({
             <thead className="text-[10px] text-gray-500 uppercase bg-zinc-900/50 print:bg-gray-100 print:text-black print:font-bold">
                 <tr>
                     <th className="p-2 print:border print:border-gray-300">Инструмент / Услуга</th>
-                    <th className="p-2 text-right print:border print:border-gray-300">Объем</th>
-                    <th className="p-2 text-right hidden sm:table-cell print:table-cell print:border print:border-gray-300">Стоимость</th>
-                </tr>
-            </thead>
-            <tbody>
-                {/* Labor Line */}
-                <tr className="border-b border-zinc-800 print:border print:border-gray-300">
-                    <td className="p-2 font-bold print:border-r print:border-gray-300">Специалист (Production & Engineering)</td>
-                    <td className="p-2 text-right print:border-r print:border-gray-300">{safeLaborHours} ч.</td>
-                    <td className="p-2 text-right">{formatCurrency(baseLaborCost)}</td>
-                </tr>
-                {/* AI Items */}
-                {items.map((item, idx) => (
-                    <tr key={idx} className="border-b border-zinc-800 print:border print:border-gray-300">
-                        <td className="p-2 print:border-r print:border-gray-300">
-                            <span className="block text-white print:text-black font-semibold">{item.name}</span>
-                            <span className="text-[9px] text-gray-500 print:text-gray-600">{item.category.toUpperCase()} Module</span>
-                        </td>
-                        <td className="p-2 text-right print:border-r print:border-gray-300">{item.amount} {item.unit.substr(0,3)}</td>
-                        <td className="p-2 text-right">
-                            {formatCurrency(item.amount * item.lightning_price * safeCurrencyRate * AI_BUFFER_MULTIPLIER)}
-                        </td>
-                    </tr>
-                ))}
-            </tbody>
-          </table>
-      </div>
-      )}
-
-      {/* --- ARGUMENTS --- */}
-      <div className="grid grid-cols-1 gap-4 px-4 sm:px-0 print:grid-cols-2 print:gap-8 print:mb-8 print:px-0">
-        {/* Risk Argumentation */}
-        <div className="border border-zinc-800 bg-zinc-900/50 p-4 rounded-sm print:border print:border-gray-300 print:bg-white">
-           <h4 className="text-white font-bold text-sm mb-2 flex items-center print:text-black uppercase">
-             <span className="text-cyber-alert mr-2 print:hidden">🛡</span> 
-             Надежность (Risk x{safeRisk})
-           </h4>
-           <p className="text-xs text-gray-400 leading-relaxed mb-2 print:text-black">
-             В стоимость заложен коэффициент <strong>x{safeRisk}</strong>. Это гарантия результата.
-             Мы покрываем риски "галлюцинаций" нейросетей, технические сбои и необходимость перегенерации (отбраковка до 70%).
-           </p>
-        </div>
-
-        {/* Speed Argumentation */}
-        {safeUrgency > 1.0 ? (
-          <div className="border border-cyber-tech/50 bg-cyber-tech/10 p-4 rounded-sm print:border print:border-gray-300 print:bg-white">
-            <h4 className="text-cyber-tech font-bold text-sm mb-2 flex items-center print:text-black uppercase">
-              <span className="mr-2 print:hidden">🚀</span> 
-              Срочность (Urgency x{safeUrgency})
-            </h4>
-            <p className="text-xs text-gray-300 leading-relaxed print:text-black">
-              Проект реализуется в приоритетном режиме. 
-              {safeUrgency >= 2.0 
-                ? " Включает работу в выходные и ночное время (Crunch Mode)."
-                : " Fast Track: Выделенный ресурс команды."
-              }
-            </p>
-          </div>
-        ) : (
-          <div className="border border-zinc-800 p-4 rounded-sm print:border print:border-gray-300 print:bg-white">
-             <h4 className="text-gray-400 font-bold text-sm mb-2 flex items-center print:text-black uppercase">
-                Стандартный Режим
-             </h4>
-             <p className="text-xs text-gray-500 leading-relaxed print:text-black">
-                Работы выполняются в штатном порядке согласно графику. Без наценок.
-             </p>
-          </div>
-        )}
-      </div>
-
-      {/* --- CHARTS (SCREEN ONLY) --- */}
-      <div className="bg-zinc-900 border border-zinc-800 p-4 print:hidden mx-4 sm:mx-0">
-           <h4 className="text-gray-400 font-mono text-xs mb-4 uppercase text-center">СТРУКТУРА ЦЕННОСТИ</h4>
-           <div className="h-40 w-full relative flex items-center justify-center">
-             {!isEmpty && total > 0 ? (
-             <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={data}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={45}
-                    outerRadius={65}
-                    paddingAngle={4}
-                    dataKey="value"
-                    stroke="none"
-                  >
-                    {data.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip 
-                    contentStyle={{ backgroundColor: '#050505', border: '1px solid #333', borderRadius: '4px' }}
-                    itemStyle={{ color: '#fff', fontSize: '11px', fontFamily: 'monospace' }}
-                    formatter={(value: number) => formatCurrency(value)}
-                  />
-                </PieChart>
-             </ResponsiveContainer>
-             ) : (
-                 <div className="text-xs font-mono text-gray-600">NO DATA AVAILABLE</div>
-             )}
-           </div>
-           {/* Custom Legend */}
-           {!isEmpty && (
-           <div className="flex flex-wrap justify-center gap-4 mt-2">
-              <div className="flex items-center gap-2">
-                 <div className="w-2 h-2 rounded-sm bg-[#ccff00]"></div>
-                 <span className="text-[10px] font-mono text-gray-400 uppercase">AI Res</span>
-              </div>
-              <div className="flex items-center gap-2">
-                 <div className="w-2 h-2 rounded-sm bg-[#00f0ff]"></div>
-                 <span className="text-[10px] font-mono text-gray-400 uppercase">Labor</span>
-              </div>
-              {premiumValue > 100 && (
-                <div className="flex items-center gap-2">
-                   <div className="w-2 h-2 rounded-sm bg-[#ff003c]"></div>
-                   <span className="text-[10px] font-mono text-gray-400 uppercase">Multiplier</span>
-                </div>
-              )}
-           </div>
-           )}
-      </div>
-
-      {/* --- FINANCIAL SUMMARY TABLE --- */}
-      {!isEmpty && (
-      <div className="border-t border-cyber-dim pt-4 px-4 sm:px-0 print:border-black print:mt-4 print:px-0">
-        <h3 className="text-sm font-mono text-gray-400 mb-3 print:text-black print:font-bold uppercase">Финансовое Резюме</h3>
-        <table className="w-full text-xs font-mono text-left text-gray-300 print:text-black">
-          <tbody>
-            <tr className="border-b border-zinc-800 print:border-gray-300">
-              <td className="py-2">Production Costs (Ресурсы + Работа)</td>
-              <td className="py-2 text-right">{formatCurrency(subtotal)}</td>
-            </tr>
-            {premiumValue > 100 && (
-              <tr className="border-b border-zinc-800 text-cyber-alert print:text-black print:border-gray-300">
-                <td className="py-2">Multipliers (Risk & Urgency Premium)</td>
-                <td className="py-2 text-right">{formatCurrency(premiumValue)}</td>
-              </tr>
-            )}
-             <tr className="font-bold text-white print:text-black text-sm">
-              <td className="py-4 pt-4">ИТОГО К ОПЛАТЕ</td>
-              <td className="py-4 text-right pt-4">{formatCurrency(total)}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      )}
-
-      {/* --- FOOTER / SIGNATURE (PRINT) --- */}
-      <div className="hidden print:block mt-16 pt-8 border-t-2 border-black">
-          <div className="grid grid-cols-2 gap-16">
-              <div>
-                  <p className="text-xs uppercase font-bold mb-8 text-black">ИСПОЛНИТЕЛЬ:</p>
-                  <div className="h-px bg-black w-full mb-2"></div>
-                  <p className="text-xs text-gray-500">Подпись / М.П.</p>
-              </div>
-              <div>
-                  <p className="text-xs uppercase font-bold mb-8 text-black">ЗАКАЗЧИК:</p>
-                  <div className="h-px bg-black w-full mb-2"></div>
-                  <p className="text-xs text-gray-500">Подпись / М.П.</p>
-              </div>
-          </div>
-          <p className="text-[9px] text-gray-400 mt-8 text-center font-mono">
-              Generated by Anti-Doshirak Protocol // {currentDate}
-          </p>
-      </div>
-
-      {/* --- NEUROSKAM WATERMARK (SCREEN & PNG) --- */}
-      <div className="mt-12 mb-4 px-4 sm:px-0 flex justify-end opacity-40 hover:opacity-100 transition-opacity print:hidden">
-          <a 
-            href="https://t.me/neuroskam" 
-            target="_blank" 
-            rel="noreferrer" 
-            className="text-[10px] font-mono text-gray-600 hover:text-cyber-tech flex items-center gap-2 group decoration-0"
-          >
-             <span className="w-1.5 h-1.5 bg-gray-700 rounded-full group-hover:bg-cyber-tech transition-colors"></span>
-             dev by @neuroskam
-          </a>
-      </div>
-
-      {/* --- CREATOR ACTIONS (SCREEN) --- */}
-      {!isClientMode && (
-        <div className="grid grid-cols-2 gap-2 no-print px-4 sm:px-0 no-screenshot">
-            <div className="col-span-2 flex gap-2">
-                {onMarketCheck && (
-                    <button 
-                    onClick={onMarketCheck}
-                    className="flex-1 bg-zinc-800 text-cyber-tech border border-cyber-dim font-bold py-4 font-mono uppercase tracking-widest hover:border-cyber-tech hover:bg-zinc-700 transition-all flex justify-center items-center gap-2"
-                    >
-                    <span className="hidden sm:inline">⚖️</span> Калибровка
-                    </button>
-                )}
-                {onShareClick && (
-                    <button 
-                    onClick={onShareClick}
-                    className="flex-[2] bg-cyber-neon text-black font-bold py-4 font-mono uppercase tracking-widest hover:shadow-[0_0_15px_rgba(204,255,0,0.4)] transition-all flex justify-center items-center gap-2"
-                    >
-                        <span>🚀</span> ОТПРАВИТЬ КЛИЕНТУ
-                    </button>
-                )}
-            </div>
-            <button 
-                onClick={() => setShowTextModal(true)}
-                className="bg-zinc-900 text-gray-300 border border-zinc-700 font-bold py-3 font-mono uppercase text-xs hover:text-white hover:border-white transition-all"
-            >
-                TXT REPORT
-            </button>
-            <button 
-                disabled={isExporting}
-                onClick={handleScreenshot}
-                className="bg-zinc-900 text-gray-300 border border-zinc-700 font-bold py-3 font-mono uppercase text-xs hover:text-white hover:border-white transition-all disabled:opacity-50"
-            >
-                {isExporting ? '...' : 'СКАЧАТЬ PNG'}
-            </button>
-        </div>
-      )}
-
-      {/* --- CLIENT ACTIONS (SCREEN) --- */}
-      {isClientMode && (
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black via-black to-transparent z-50 max-w-md mx-auto flex gap-3 no-print no-screenshot">
-           <button 
-             onClick={onTender}
-             disabled={isEmpty}
-             className="flex-1 border border-cyber-dim text-gray-300 font-bold py-3 font-mono uppercase text-xs hover:border-cyber-tech hover:text-cyber-tech transition-all disabled:opacity-30 disabled:hover:border-cyber-dim disabled:hover:text-gray-300 disabled:cursor-not-allowed"
-           >
-             СРАВНИТЬ ЦЕНЫ
-           </button>
-           <button 
-             onClick={handleApproveClick}
-             disabled={isEmpty}
-             className="flex-1 bg-cyber-neon text-black font-bold py-3 font-mono uppercase text-xs hover:shadow-[0_0_15px_rgba(204,255,0,0.4)] transition-all disabled:opacity-30 disabled:hover:shadow-none disabled:cursor-not-allowed"
-           >
-             ПРИНЯТЬ ПРЕДЛОЖЕНИЕ
-           </button>
-        </div>
-      )}
-    </div>
-  );
-};
-
-export default Proposal;
+                    <th className
