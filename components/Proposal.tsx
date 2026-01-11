@@ -33,7 +33,6 @@ const Proposal: React.FC<ProposalProps> = ({
 }) => {
   
   const [showTextModal, setShowTextModal] = useState(false);
-  // Новое состояние для показа картинки внутри сайта (обход блокировки скачивания)
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [isExporting, setIsExporting] = useState(false);
   const [proposalStatus, setProposalStatus] = useState<'viewing' | 'accepted'>('viewing');
@@ -49,7 +48,6 @@ const Proposal: React.FC<ProposalProps> = ({
 
   // --- CALCULATIONS ---
 
-  // 1. Costs
   const rawAiCost = items.reduce((acc, item) => acc + (item.amount * item.lightning_price * safeCurrencyRate), 0);
   const bufferedAiCost = rawAiCost * AI_BUFFER_MULTIPLIER;
   const baseLaborCost = safeLaborHours * safeHourlyRate;
@@ -57,7 +55,7 @@ const Proposal: React.FC<ProposalProps> = ({
   const total = subtotal * safeRisk * safeUrgency;
   const premiumValue = Math.max(0, total - subtotal);
 
-  // 2. Timeline (Heuristic)
+  // Timeline
   const baseDays = Math.max(1, Math.ceil(safeLaborHours / 5));
   let timelineString = "";
   
@@ -91,14 +89,13 @@ const Proposal: React.FC<ProposalProps> = ({
     if (!proposalRef.current) return;
     setIsExporting(true);
     
-    // Ensure clean state without scroll issues
     window.scrollTo(0, 0);
     await new Promise(r => setTimeout(r, 500));
 
     try {
         const canvas = await html2canvas(proposalRef.current, {
             backgroundColor: '#050505',
-            scale: 2, // Оптимизируем, чтобы не крашилось на мобилках
+            scale: 2,
             useCORS: true,
             allowTaint: true,
             logging: false,
@@ -106,15 +103,11 @@ const Proposal: React.FC<ProposalProps> = ({
         });
 
         const imgData = canvas.toDataURL('image/png');
-        
-        // Определяем, мобилка это или десктоп
         const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
         if (isMobile) {
-            // ДЛЯ ТЕЛЕГРАМА И МОБИЛОК: Показываем картинку, а не качаем файл
             setGeneratedImage(imgData);
         } else {
-            // ДЛЯ КОМПА: Стандартное скачивание
             const link = document.createElement('a');
             link.download = `Estimate_${clientName || 'Project'}_${new Date().toISOString().split('T')[0]}.png`;
             link.href = imgData;
@@ -176,7 +169,6 @@ const Proposal: React.FC<ProposalProps> = ({
 
   const currentDate = new Date().toLocaleDateString('ru-RU', { year: 'numeric', month: 'long', day: 'numeric' });
 
-  // --- ACCEPTED STATE VIEW ---
   if (proposalStatus === 'accepted') {
     return (
         <div className="min-h-screen bg-cyber-black flex flex-col items-center justify-center p-4 animate-fade-in text-center relative overflow-hidden">
@@ -235,7 +227,7 @@ const Proposal: React.FC<ProposalProps> = ({
   return (
     <div ref={proposalRef} className={`space-y-6 pb-32 animate-fade-in ${isClientMode ? 'pt-0' : ''} bg-cyber-black min-h-screen text-gray-300 print:bg-white print:text-black print:pb-0 print:space-y-4 print:block`}>
       
-      {/* IMAGE PREVIEW MODAL (FOR MOBILE/TELEGRAM) */}
+      {/* IMAGE PREVIEW MODAL */}
       {generatedImage && (
         <div className="fixed inset-0 z-[150] bg-black/95 flex flex-col items-center justify-center p-4 backdrop-blur-md no-screenshot animate-fade-in">
              <div className="w-full max-w-lg flex flex-col items-center">
@@ -278,7 +270,6 @@ const Proposal: React.FC<ProposalProps> = ({
                 <div className="flex gap-4 mt-4 shrink-0">
                     <button 
                         onClick={() => {
-                            // Using safe copy method here too
                             const text = generateTextReport();
                             try {
                                 const ta = document.createElement('textarea');
@@ -310,7 +301,7 @@ const Proposal: React.FC<ProposalProps> = ({
         </div>
       )}
 
-      {/* --- HEADER (PRINT / SCREENSHOT ONLY) --- */}
+      {/* --- HEADER --- */}
       <div className="hidden print:flex justify-between items-end border-b-2 border-black pb-4 mb-8 pt-8">
          <div>
             <h1 className="text-4xl font-black uppercase tracking-tighter text-black">СМЕТА ПРОЕКТА</h1>
@@ -330,7 +321,7 @@ const Proposal: React.FC<ProposalProps> = ({
          </div>
       </div>
 
-      {/* --- BRANDING (SCREEN HEADER) --- */}
+      {/* --- BRANDING --- */}
       <div>
         {(creatorName || creatorTelegram || clientName) && (
             <div className="bg-zinc-900 border-b border-cyber-dim p-4 flex justify-between items-center mb-4">
@@ -358,7 +349,7 @@ const Proposal: React.FC<ProposalProps> = ({
         )}
       </div>
 
-      {/* --- INFO BLOCK (PRINT) --- */}
+      {/* --- INFO BLOCK --- */}
       <div className="hidden print:grid grid-cols-2 gap-8 mb-8 text-sm">
          <div className="border border-gray-300 p-4 bg-gray-50">
             <span className="block text-xs text-gray-500 uppercase mb-1">ЗАКАЗЧИК</span>
@@ -385,7 +376,7 @@ const Proposal: React.FC<ProposalProps> = ({
         </div>
       </div>
       
-      {/* --- EMPTY STATE WARNING --- */}
+      {/* --- EMPTY STATE --- */}
       {isEmpty && (
         <div className="mx-4 sm:mx-0 mt-4 bg-yellow-500/10 border border-yellow-600 p-4 flex items-center justify-center flex-col text-center">
              <h3 className="text-yellow-500 font-bold font-mono text-lg mb-1">GUEST ACCESS // NO ACTIVE OFFERS</h3>
@@ -397,24 +388,4 @@ const Proposal: React.FC<ProposalProps> = ({
 
       {/* --- HERO TOTAL --- */}
       <div className="bg-zinc-900/50 border border-cyber-dim p-6 text-center relative overflow-hidden mx-4 sm:mx-0 print:border-4 print:border-black print:bg-white print:p-8 print:mb-8 print:shadow-none">
-        <div className="absolute top-0 left-0 w-1 h-full bg-cyber-neon print:hidden"></div>
-        <p className="text-xs font-mono text-gray-500 uppercase tracking-widest mb-1 print:text-black print:font-bold">Итоговая Стоимость Проекта</p>
-        <h1 className={`text-4xl sm:text-5xl font-mono font-black drop-shadow-[0_0_10px_rgba(204,255,0,0.3)] print:text-black print:drop-shadow-none print:text-6xl print:my-4 ${isEmpty ? 'text-gray-500' : 'text-cyber-neon'}`}>
-          {isEmpty ? "NO ACTIVE OFFER" : formatCurrency(total)}
-        </h1>
-        <div className="mt-2 flex justify-center gap-2 text-[10px] font-mono text-gray-500 print:text-black print:text-xs">
-           <span className="">СЛОЖНОСТЬ: x{safeRisk}</span>
-           <span className="">ПРИОРИТЕТ: x{safeUrgency}</span>
-           <span className="hidden print:inline-block border border-black px-3 py-1 font-bold">Timeline: {timelineString}</span>
-        </div>
-      </div>
-
-      {/* --- ITEMIZED TABLE --- */}
-      {!isEmpty && (
-      <div className="px-4 sm:px-0 mb-8 print:px-0">
-          <h3 className="text-sm font-mono text-gray-400 mb-3 print:text-black print:font-bold uppercase print:mb-2 print:border-b print:border-black print:pb-1">Scope of Work (Детализация)</h3>
-          <table className="w-full text-xs font-mono text-left text-gray-300 print:text-black">
-            <thead className="text-[10px] text-gray-500 uppercase bg-zinc-900/50 print:bg-gray-100 print:text-black print:font-bold">
-                <tr>
-                    <th className="p-2 print:border print:border-gray-300">Инструмент / Услуга</th>
-                    <th className
+        <div className="absolute top-0
