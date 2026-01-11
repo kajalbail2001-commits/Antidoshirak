@@ -47,7 +47,6 @@ const Proposal: React.FC<ProposalProps> = ({
   const isEmpty = items.length === 0 && safeLaborHours === 0;
 
   // --- CALCULATIONS ---
-
   const rawAiCost = items.reduce((acc, item) => acc + (item.amount * item.lightning_price * safeCurrencyRate), 0);
   const bufferedAiCost = rawAiCost * AI_BUFFER_MULTIPLIER;
   const baseLaborCost = safeLaborHours * safeHourlyRate;
@@ -58,7 +57,6 @@ const Proposal: React.FC<ProposalProps> = ({
   // Timeline
   const baseDays = Math.max(1, Math.ceil(safeLaborHours / 5));
   let timelineString = "";
-  
   if (isEmpty) {
       timelineString = "---";
   } else if (safeUrgency >= 2.0) {
@@ -116,9 +114,34 @@ const Proposal: React.FC<ProposalProps> = ({
 
     } catch (error) {
         console.error("Screenshot failed:", error);
-        alert("Не удалось создать скриншот. Возможно, браузер блокирует действие.");
+        alert("Не удалось создать скриншот.");
     } finally {
         setIsExporting(false);
+    }
+  };
+
+  // НОВАЯ ФУНКЦИЯ ДЛЯ NEKOGRAM И IOS
+  const handleShareImage = async () => {
+    if (!generatedImage) return;
+    try {
+        // Превращаем картинку из "строки" в настоящий "файл"
+        const response = await fetch(generatedImage);
+        const blob = await response.blob();
+        const file = new File([blob], `Estimate_${new Date().toISOString().split('T')[0]}.png`, { type: "image/png" });
+
+        // Если браузер умеет делиться файлами (почти все телефоны умеют)
+        if (navigator.share && navigator.canShare({ files: [file] })) {
+            await navigator.share({
+                files: [file],
+                title: 'Смета проекта',
+                text: 'Смета сгенерирована в Anti-Doshirak'
+            });
+        } else {
+            alert("Ваш браузер не поддерживает отправку файлов. Попробуйте сделать скриншот экрана кнопками телефона.");
+        }
+    } catch (e) {
+        console.error("Share failed", e);
+        // Если пользователь нажал "Отмена" в меню, это не ошибка
     }
   };
 
@@ -234,20 +257,28 @@ const Proposal: React.FC<ProposalProps> = ({
                 <div className="text-center mb-4">
                      <p className="text-cyber-neon font-mono font-bold text-lg animate-pulse">СНИМОК СГЕНЕРИРОВАН</p>
                      <p className="text-xs text-gray-400 font-mono mt-1">
-                        Нажмите на изображение и удерживайте,<br/>чтобы сохранить его в галерею.
+                        Если скачивание не работает, сделайте скриншот экрана.
                      </p>
                 </div>
                 
-                <div className="border border-cyber-dim shadow-[0_0_30px_rgba(204,255,0,0.1)] mb-6 max-h-[60vh] overflow-y-auto">
+                <div className="border border-cyber-dim shadow-[0_0_30px_rgba(204,255,0,0.1)] mb-6 max-h-[50vh] overflow-y-auto">
                     <img src={generatedImage} alt="Estimate Preview" className="w-full h-auto block" />
                 </div>
 
-                <button 
-                    onClick={() => setGeneratedImage(null)}
-                    className="bg-white text-black font-mono font-bold py-3 px-8 uppercase hover:bg-cyber-neon transition-colors"
-                >
-                    ЗАКРЫТЬ
-                </button>
+                <div className="flex flex-col gap-2 w-full max-w-xs">
+                    <button 
+                        onClick={handleShareImage}
+                        className="bg-cyber-neon text-black font-mono font-bold py-3 px-8 uppercase hover:bg-white hover:shadow-[0_0_15px_rgba(204,255,0,0.5)] transition-all"
+                    >
+                        📤 СОХРАНИТЬ / ПОДЕЛИТЬСЯ
+                    </button>
+                    <button 
+                        onClick={() => setGeneratedImage(null)}
+                        className="bg-zinc-800 text-gray-300 border border-zinc-600 font-mono font-bold py-3 px-8 uppercase hover:text-white hover:border-white transition-all"
+                    >
+                        ЗАКРЫТЬ
+                    </button>
+                </div>
              </div>
         </div>
       )}
