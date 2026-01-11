@@ -3,7 +3,7 @@ import { Tool } from '../types';
 // MODELS
 // STRICTLY QWEN 3 CODER FREE as requested.
 // The ':free' suffix is crucial for $0 balance accounts on OpenRouter.
-const DEFAULT_MODEL = "qwen/qwen3-coder:free"; 
+const DEFAULT_MODEL = "mistralai/devstral-2512:free"; 
 
 interface ParsedItem {
   tool_id: string;
