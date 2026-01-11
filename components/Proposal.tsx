@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { ProjectItem, RiskLevel, UrgencyLevel } from '../types';
 import { AI_BUFFER_MULTIPLIER, RISK_LABELS, URGENCY_LABELS } from '../constants';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-import html2canvas from 'html2canvas'; [span_0](start_span)//[span_0](end_span)
+import html2canvas from 'html2canvas';
 
 interface ProposalProps {
   items: ProjectItem[];
@@ -11,20 +11,20 @@ interface ProposalProps {
   risk: RiskLevel;
   urgency: UrgencyLevel;
   currencyRate: number;
-  onBack?: () => void; [span_1](start_span)//[span_1](end_span)
+  onBack?: () => void;
   isClientMode?: boolean;
   onApprove?: () => void;
   onTender?: () => void;
   onMarketCheck?: () => void;
-  onShareClick?: () => void; [span_2](start_span)//[span_2](end_span)
-  onFork?: () => void; 
+  onShareClick?: () => void; 
+  onFork?: () => void;
   
   // Branding
   clientName?: string;
   creatorName?: string;
   creatorTelegram?: string;
   creatorAvatarUrl?: string;
-[span_3](start_span)} //[span_3](end_span)
+}
 
 const Proposal: React.FC<ProposalProps> = ({ 
   items, hourlyRate, laborHours, risk, urgency, currencyRate, 
@@ -33,152 +33,152 @@ const Proposal: React.FC<ProposalProps> = ({
 }) => {
   
   const [showTextModal, setShowTextModal] = useState(false);
-  const [isExporting, setIsExporting] = useState(false); [span_4](start_span)//[span_4](end_span)
+  const [isExporting, setIsExporting] = useState(false);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   
-  const [proposalStatus, setProposalStatus] = useState<'viewing' | 'accepted'>('viewing'); [span_5](start_span)//[span_5](end_span)
+  const [proposalStatus, setProposalStatus] = useState<'viewing' | 'accepted'>('viewing');
   const proposalRef = useRef<HTMLDivElement>(null);
 
-  const safeCurrencyRate = (isNaN(currencyRate) || currencyRate < 0) ? 0 : currencyRate; [span_6](start_span)//[span_6](end_span)
-  const safeHourlyRate = (isNaN(hourlyRate) || hourlyRate < 0) ? 0 : hourlyRate; [span_7](start_span)//[span_7](end_span)
-  const safeLaborHours = (isNaN(laborHours) || laborHours < 0) ? 0 : laborHours; [span_8](start_span)//[span_8](end_span)
-  const safeRisk = (!risk || risk < 1) ? 1.2 : risk; [span_9](start_span)//[span_9](end_span)
-  const safeUrgency = (!urgency || urgency < 1) ? 1.0 : urgency; [span_10](start_span)//[span_10](end_span)
+  const safeCurrencyRate = (isNaN(currencyRate) || currencyRate < 0) ? 0 : currencyRate;
+  const safeHourlyRate = (isNaN(hourlyRate) || hourlyRate < 0) ? 0 : hourlyRate;
+  const safeLaborHours = (isNaN(laborHours) || laborHours < 0) ? 0 : laborHours;
+  const safeRisk = (!risk || risk < 1) ? 1.2 : risk;
+  const safeUrgency = (!urgency || urgency < 1) ? 1.0 : urgency;
   
-  const isEmpty = items.length === 0 && safeLaborHours === 0; [span_11](start_span)//[span_11](end_span)
+  const isEmpty = items.length === 0 && safeLaborHours === 0;
 
   // --- CALCULATIONS ---
   const rawAiCost = items.reduce((acc, item) => acc + (item.amount * item.lightning_price * safeCurrencyRate), 0);
-  const bufferedAiCost = rawAiCost * AI_BUFFER_MULTIPLIER; [span_12](start_span)//[span_12](end_span)
+  const bufferedAiCost = rawAiCost * AI_BUFFER_MULTIPLIER;
   const baseLaborCost = safeLaborHours * safeHourlyRate;
   const subtotal = bufferedAiCost + baseLaborCost;
-  const total = subtotal * safeRisk * safeUrgency; [span_13](start_span)//[span_13](end_span)
+  const total = subtotal * safeRisk * safeUrgency;
   const premiumValue = Math.max(0, total - subtotal);
 
   // Timeline
-  const baseDays = Math.max(1, Math.ceil(safeLaborHours / 5)); [span_14](start_span)//[span_14](end_span)
+  const baseDays = Math.max(1, Math.ceil(safeLaborHours / 5));
   let timelineString = "";
-  [span_15](start_span)if (isEmpty) { //[span_15](end_span)
+  if (isEmpty) {
       timelineString = "---";
-  [span_16](start_span)} else if (safeUrgency >= 2.0) { //[span_16](end_span)
+  } else if (safeUrgency >= 2.0) {
       const crunchDays = Math.ceil(safeLaborHours / 12);
-      timelineString = `${crunchDays * 24} HOURS (CRUNCH MODE)`; [span_17](start_span)//[span_17](end_span)
+      timelineString = `${crunchDays * 24} HOURS (CRUNCH MODE)`;
   } else if (safeUrgency >= 1.5) {
       const fastDays = Math.ceil(safeLaborHours / 8);
-      timelineString = `${fastDays}-${fastDays + 1} DAYS (PRIORITY)`; [span_18](start_span)//[span_18](end_span)
+      timelineString = `${fastDays}-${fastDays + 1} DAYS (PRIORITY)`;
   } else {
       timelineString = `${baseDays}-${baseDays + 2} BUSINESS DAYS`;
-  [span_19](start_span)} //[span_19](end_span)
+  }
 
   // Chart Data
   const data = [
     { name: 'Технический стек (AI Res)', value: Math.max(0, Number(bufferedAiCost.toFixed(0))), color: '#ccff00' },
     { name: 'Разработка (Labor)', value: Math.max(0, Number(baseLaborCost.toFixed(0))), color: '#00f0ff' },
   ];
-  [span_20](start_span)if (premiumValue > 100) { //[span_20](end_span)
+  if (premiumValue > 100) {
     data.push({ name: 'Коэфф. Сложности', value: Math.max(0, Number(premiumValue.toFixed(0))), color: '#ff003c' });
-  [span_21](start_span)} //[span_21](end_span)
+  }
   
   const formatCurrency = (val: number) => {
     if (isNaN(val)) return '0 ₽';
-    return new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB', maximumFractionDigits: 0 }).format(val); [span_22](start_span)//[span_22](end_span)
-  [span_23](start_span)} //[span_23](end_span)
+    return new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB', maximumFractionDigits: 0 }).format(val);
+  }
 
   const handleScreenshot = async () => {
     if (!proposalRef.current) return;
     setIsExporting(true);
     
     // Скролл наверх, чтобы не было глюков верстки
-    window.scrollTo(0, 0); [span_24](start_span)//[span_24](end_span)
-    await new Promise(r => setTimeout(r, 500)); [span_25](start_span)//[span_25](end_span)
+    window.scrollTo(0, 0);
+    await new Promise(r => setTimeout(r, 500));
 
     try {
-        [span_26](start_span)const canvas = await html2canvas(proposalRef.current, { //[span_26](end_span)
+        const canvas = await html2canvas(proposalRef.current, {
             backgroundColor: '#050505', 
             scale: 2, 
             useCORS: true, 
             allowTaint: true,
-            [span_27](start_span)logging: false, //[span_27](end_span)
+            logging: false,
             ignoreElements: (element) => {
                 return element.classList.contains('no-screenshot');
             }
         });
         
-        const dataUrl = canvas.toDataURL('image/png'); [span_28](start_span)//[span_28](end_span)
+        const dataUrl = canvas.toDataURL('image/png');
         setGeneratedImage(dataUrl); // Показываем модалку с картинкой
 
     } catch (error) {
         console.error("Screenshot failed:", error);
-        alert("Не удалось создать скриншот. Возможно, браузер блокирует canvas."); [span_29](start_span)//[span_29](end_span)
+        alert("Не удалось создать скриншот. Возможно, браузер блокирует canvas.");
     } finally {
         setIsExporting(false);
-    [span_30](start_span)} //[span_30](end_span)
+    }
   };
 
   const downloadImageDirectly = () => {
       if (!generatedImage) return;
-      const link = document.createElement('a'); [span_31](start_span)//[span_31](end_span)
+      const link = document.createElement('a');
       link.download = `Estimate_${clientName || 'Project'}_${new Date().toISOString().split('T')[0]}.png`;
       link.href = generatedImage;
       link.click();
-  [span_32](start_span)} //[span_32](end_span)
+  }
 
   const handleApproveClick = () => {
     setProposalStatus('accepted');
     if (onApprove) onApprove();
   };
 
-  [span_33](start_span)const generateTextReport = () => { //[span_33](end_span)
+  const generateTextReport = () => {
     const date = new Date().toLocaleDateString('ru-RU');
-    let text = `⚡️ ANTI-DOSHIRAK ESTIMATE // ${date}\n`; [span_34](start_span)//[span_34](end_span)
+    let text = `⚡️ ANTI-DOSHIRAK ESTIMATE // ${date}\n`;
     text += `====================================\n`;
     if (clientName) text += `👤 ЗАКАЗЧИК: ${clientName}\n`;
-    text += `📅 СРОКИ: ${timelineString}\n`; [span_35](start_span)//[span_35](end_span)
+    text += `📅 СРОКИ: ${timelineString}\n`;
     text += `💰 ИТОГО: ${isEmpty ? 'ПО ЗАПРОСУ' : formatCurrency(total)}\n`;
     text += `====================================\n\n`;
     
-    [span_36](start_span)if (isEmpty) { //[span_36](end_span)
+    if (isEmpty) {
         text += `ПРЕДЛОЖЕНИЕ НЕ АКТИВНО ИЛИ НЕ НАЙДЕНО.\n`;
-    [span_37](start_span)} else { //[span_37](end_span)
+    } else {
         text += `📋 ДЕТАЛИЗАЦИЯ (SCOPE):\n`;
-        [span_38](start_span)items.forEach(item => { //[span_38](end_span)
+        items.forEach(item => {
            const cost = item.amount * item.lightning_price * safeCurrencyRate * AI_BUFFER_MULTIPLIER;
            text += `• ${item.name} (${item.amount} ${item.unit}): ${formatCurrency(cost)}\n`;
         });
-        text += `• Специалист (Production, ${safeLaborHours}ч): ${formatCurrency(baseLaborCost)}\n`; [span_39](start_span)//[span_39](end_span)
+        text += `• Специалист (Production, ${safeLaborHours}ч): ${formatCurrency(baseLaborCost)}\n`;
         
         if (premiumValue > 100) {
             text += `\n📈 КОЭФФИЦИЕНТЫ:\n`;
-            text += `• Сложность (Risk x${safeRisk}): ${RISK_LABELS[safeRisk] || ''}\n`; [span_40](start_span)//[span_40](end_span)
-            if (safeUrgency > 1.0) text += `• Срочность (Urgency x${safeUrgency}): ${URGENCY_LABELS[safeUrgency] || ''}\n`; [span_41](start_span)//[span_41](end_span)
+            text += `• Сложность (Risk x${safeRisk}): ${RISK_LABELS[safeRisk] || ''}\n`;
+            if (safeUrgency > 1.0) text += `• Срочность (Urgency x${safeUrgency}): ${URGENCY_LABELS[safeUrgency] || ''}\n`;
             text += `• Доп. ценность (Multipliers): ${formatCurrency(premiumValue)}\n`;
         }
         
         text += `\n🛡 АРГУМЕНТАЦИЯ:\n`;
-        if (safeUrgency > 1.0) text += `- Проект реализуется в приоритетном режиме (Fast Track).\n`; [span_42](start_span)//[span_42](end_span)
-        text += `- В стоимость заложены риски генерации и технические итерации.\n`; [span_43](start_span)//[span_43](end_span)
-    [span_44](start_span)} //[span_44](end_span)
+        if (safeUrgency > 1.0) text += `- Проект реализуется в приоритетном режиме (Fast Track).\n`;
+        text += `- В стоимость заложены риски генерации и технические итерации.\n`;
+    }
     
     if (creatorName) {
         text += `\n--------------------------------\n`;
-        text += `С уважением,\n${creatorName}`; [span_45](start_span)//[span_45](end_span)
+        text += `С уважением,\n${creatorName}`;
         if (creatorTelegram) text += ` (${creatorTelegram})`;
     }
     
     return text;
-  }; [span_46](start_span)//[span_46](end_span)
+  };
 
   const currentDate = new Date().toLocaleDateString('ru-RU', { year: 'numeric', month: 'long', day: 'numeric' });
 
   // --- ACCEPTED STATE VIEW ---
-  [span_47](start_span)if (proposalStatus === 'accepted') { //[span_47](end_span)
+  if (proposalStatus === 'accepted') {
     return (
         <div className="min-h-screen bg-cyber-black flex flex-col items-center justify-center p-4 animate-fade-in text-center relative overflow-hidden">
              {/* Background Grid */}
              <div className="absolute inset-0 bg-[linear-gradient(rgba(10,10,10,1)_1px,transparent_1px),linear-gradient(90deg,rgba(10,10,10,1)_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,#000_70%,transparent_100%)] -z-10 opacity-20"></div>
 
             <div className="max-w-md w-full border border-cyber-neon bg-zinc-900/80 p-8 relative shadow-[0_0_50px_rgba(204,255,0,0.15)] backdrop-blur-md">
-                [span_48](start_span)<div className="absolute top-0 left-0 w-2 h-2 bg-cyber-neon"></div> {/*[span_48](end_span) */}
+                <div className="absolute top-0 left-0 w-2 h-2 bg-cyber-neon"></div>
                 <div className="absolute top-0 right-0 w-2 h-2 bg-cyber-neon"></div>
                 <div className="absolute bottom-0 left-0 w-2 h-2 bg-cyber-neon"></div>
                 <div className="absolute bottom-0 right-0 w-2 h-2 bg-cyber-neon"></div>
@@ -186,45 +186,45 @@ const Proposal: React.FC<ProposalProps> = ({
                 <div className="text-6xl mb-6 animate-pulse">🤝</div>
                 
                 <h2 className="text-2xl font-mono text-white font-bold mb-2 tracking-widest uppercase">
-                    [span_49](start_span)PROTOCOL <span className="text-cyber-neon">ACTIVATED</span> {/*[span_49](end_span) */}
+                    PROTOCOL <span className="text-cyber-neon">ACTIVATED</span>
                 </h2>
                 
-                [span_50](start_span)<div className="h-px bg-gradient-to-r from-transparent via-cyber-neon to-transparent w-full my-4"></div> {/*[span_50](end_span) */}
+                <div className="h-px bg-gradient-to-r from-transparent via-cyber-neon to-transparent w-full my-4"></div>
 
                 <p className="text-sm text-gray-300 font-mono mb-8 leading-relaxed">
                     Предложение принято.
-                    Система зафиксировала договоренности.  [span_51](start_span){/*[span_51](end_span) */}
+                    Система зафиксировала договоренности.
                     <br/>
                     Инициализация рабочего процесса...
                 </p>
 
-                {creatorTelegram ? [span_52](start_span)( //[span_52](end_span)
+                {creatorTelegram ? (
                      <a 
                         href={`https://t.me/${creatorTelegram.replace('@','').replace('https://t.me/','')}`} 
                         target="_blank" 
                         rel="noreferrer"
-                        [span_53](start_span)className="block w-full bg-cyber-neon text-black font-bold py-4 font-mono uppercase tracking-widest hover:shadow-[0_0_25px_rgba(204,255,0,0.6)] hover:bg-white transition-all mb-6" //[span_53](end_span)
+                        className="block w-full bg-cyber-neon text-black font-bold py-4 font-mono uppercase tracking-widest hover:shadow-[0_0_25px_rgba(204,255,0,0.6)] hover:bg-white transition-all mb-6"
                      >
                         ОТКРЫТЬ ЧАТ С ИСПОЛНИТЕЛЕМ
-                      [span_54](start_span)</a> //[span_54](end_span)
+                      </a>
                 ) : (
                     <div className="p-4 border border-dashed border-zinc-700 text-gray-500 font-mono text-xs mb-6">
                         КОНТАКТЫ ИСПОЛНИТЕЛЯ НЕ УКАЗАНЫ.<br/>ИСПОЛЬЗУЙТЕ СТАНДАРТНЫЙ КАНАЛ СВЯЗИ.
                     </div>
-                [span_55](start_span))} {/*[span_55](end_span) */}
+                )}
                 
                 <button 
                     onClick={() => setProposalStatus('viewing')}
                     className="text-[10px] text-cyber-dim font-mono hover:text-white hover:underline uppercase tracking-wider"
-                > [span_56](start_span){/*[span_56](end_span) */}
-                    &lt; [span_57](start_span)ВЕРНУТЬСЯ К ПРОСМОТРУ СМЕТЫ {/*[span_57](end_span) */}
+                >
+                    &lt; ВЕРНУТЬСЯ К ПРОСМОТРУ СМЕТЫ
                 </button>
             </div>
             
              <div className="absolute bottom-8 text-[9px] text-zinc-800 font-mono">
                  powered by @neuroskam
              </div>
-        [span_58](start_span)</div> //[span_58](end_span)
+        </div>
     );
   }
 
@@ -235,45 +235,45 @@ const Proposal: React.FC<ProposalProps> = ({
       {showTextModal && (
         <div className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4 print:hidden backdrop-blur-sm no-screenshot">
             <div className="bg-zinc-900 border border-cyber-neon w-full max-w-2xl p-6 relative shadow-[0_0_50px_rgba(204,255,0,0.1)] flex flex-col h-[80vh] md:h-auto">
-                [span_59](start_span)<div className="flex justify-between items-center mb-4"> {/*[span_59](end_span) */}
+                <div className="flex justify-between items-center mb-4">
                     <h3 className="text-cyber-neon font-mono text-xl tracking-wider">ТЕКСТОВОЙ ОТЧЕТ</h3>
                     <button onClick={() => setShowTextModal(false)} className="text-gray-500 hover:text-white font-mono">[X]</button>
                 </div>
                 
-                [span_60](start_span)<div className="flex-1 overflow-hidden relative border border-zinc-700 bg-black"> {/*[span_60](end_span) */}
+                <div className="flex-1 overflow-hidden relative border border-zinc-700 bg-black">
                      <textarea 
                         readOnly 
                         value={generateTextReport()} 
-                        [span_61](start_span)className="w-full h-full bg-black text-cyber-tech font-mono text-xs p-4 focus:outline-none resize-none" //[span_61](end_span)
+                        className="w-full h-full bg-black text-cyber-tech font-mono text-xs p-4 focus:outline-none resize-none"
                     />
                 </div>
                 <div className="flex gap-4 mt-4 shrink-0">
                     <button 
-                        [span_62](start_span)onClick={() => { //[span_62](end_span)
+                        onClick={() => {
                             // Fallback copy for text modal
                             const text = generateTextReport();
-                            [span_63](start_span)if (navigator.clipboard) { //[span_63](end_span)
+                            if (navigator.clipboard) {
                                 navigator.clipboard.writeText(text);
-                            [span_64](start_span)} else { //[span_64](end_span)
+                            } else {
                                 const ta = document.createElement('textarea');
-                                ta.value = text; [span_65](start_span)//[span_65](end_span)
+                                ta.value = text;
                                 document.body.appendChild(ta);
                                 ta.select();
                                 document.execCommand('copy');
                                 document.body.removeChild(ta);
                             }
                             alert("Отчет скопирован в буфер обмена!");
-                            setShowTextModal(false); [span_66](start_span)//[span_66](end_span)
+                            setShowTextModal(false);
                         }} 
                         className="flex-1 bg-cyber-neon text-black font-bold py-3 hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all font-mono uppercase"
                     >
                         СКОПИРОВАТЬ
                     </button>
-                    [span_67](start_span)<button //[span_67](end_span)
+                    <button 
                         onClick={() => setShowTextModal(false)} 
                         className="flex-1 border border-zinc-700 text-gray-400 hover:text-white hover:border-white font-mono uppercase"
                     >
-                        [span_68](start_span)ЗАКРЫТЬ {/*[span_68](end_span) */}
+                        ЗАКРЫТЬ
                     </button>
                 </div>
             </div>
@@ -281,30 +281,30 @@ const Proposal: React.FC<ProposalProps> = ({
       )}
 
       {/* GENERATED IMAGE MODAL (FOR MOBILE SAVE) */}
-      [span_69](start_span){generatedImage && ( //[span_69](end_span)
+      {generatedImage && (
         <div className="fixed inset-0 z-[200] bg-black/95 flex flex-col items-center justify-center p-4 print:hidden backdrop-blur-md no-screenshot">
              <div className="text-center mb-4">
                  <h3 className="text-cyber-neon font-mono text-lg font-bold">IMAGE GENERATED</h3>
                  <p className="text-[10px] text-gray-400 font-mono mt-1">
-                    Чтобы сохранить: зажмите картинку (Mobile) или нажмите кнопку (PC). [span_70](start_span){/*[span_70](end_span) */}
-                 [span_71](start_span)</p> {/*[span_71](end_span) */}
+                    Чтобы сохранить: зажмите картинку (Mobile) или нажмите кнопку (PC).
+                 </p>
              </div>
              
              <div className="relative w-full max-w-md max-h-[60vh] overflow-y-auto border border-zinc-700 bg-zinc-900 mb-4 p-2 shadow-[0_0_30px_rgba(204,255,0,0.1)]">
                  <img src={generatedImage} alt="Estimate" className="w-full h-auto block" />
              </div>
 
-             [span_72](start_span)<div className="flex flex-col gap-3 w-full max-w-xs"> {/*[span_72](end_span) */}
+             <div className="flex flex-col gap-3 w-full max-w-xs">
                  <button 
                     onClick={downloadImageDirectly}
                     className="w-full bg-cyber-tech text-black font-bold py-3 font-mono uppercase hover:bg-white transition-all"
                  >
-                     [span_73](start_span)СКАЧАТЬ ФАЙЛ {/*[span_73](end_span) */}
+                     СКАЧАТЬ ФАЙЛ
                  </button>
                  <button 
                     onClick={() => setGeneratedImage(null)}
                     className="w-full border border-zinc-600 text-gray-400 py-3 font-mono uppercase hover:text-white hover:border-white transition-all"
-                 > [span_74](start_span){/*[span_74](end_span) */}
+                 >
                     ЗАКРЫТЬ
                  </button>
              </div>
@@ -312,7 +312,7 @@ const Proposal: React.FC<ProposalProps> = ({
       )}
 
       {/* --- HEADER (PRINT / SCREENSHOT ONLY) --- */}
-      [span_75](start_span)<div className="hidden print:flex justify-between items-end border-b-2 border-black pb-4 mb-8 pt-8"> {/*[span_75](end_span) */}
+      <div className="hidden print:flex justify-between items-end border-b-2 border-black pb-4 mb-8 pt-8">
          <div>
             <h1 className="text-4xl font-black uppercase tracking-tighter text-black">СМЕТА ПРОЕКТА</h1>
             <p className="text-sm text-gray-600 mt-1">Дата: {currentDate}</p>
@@ -320,13 +320,13 @@ const Proposal: React.FC<ProposalProps> = ({
          <div className="text-right">
              {creatorAvatarUrl && (
                  <img 
-                    [span_76](start_span)src={creatorAvatarUrl} //[span_76](end_span)
+                    src={creatorAvatarUrl}
                     alt="Logo" 
                     crossOrigin="anonymous" 
                     className="w-24 h-24 object-contain ml-auto mb-2 rounded-lg border border-gray-200" 
-                 [span_77](start_span)/> //[span_77](end_span)
+                 />
              )}
-             <div className="font-bold text-xl text-black">{creatorName || [span_78](start_span)'NEUROSKAM AGENCY'}</div> //[span_78](end_span)
+             <div className="font-bold text-xl text-black">{creatorName || 'NEUROSKAM AGENCY'}</div>
              <div className="text-sm text-gray-500">{creatorTelegram}</div>
          </div>
       </div>
@@ -336,34 +336,34 @@ const Proposal: React.FC<ProposalProps> = ({
         {(creatorName || creatorTelegram || clientName) && (
             <div className="bg-zinc-900 border-b border-cyber-dim p-4 flex justify-between items-center mb-4">
             <div className="flex items-center gap-3">
-                [span_79](start_span){creatorAvatarUrl && ( //[span_79](end_span)
+                {creatorAvatarUrl && (
                     <img 
                         src={creatorAvatarUrl} 
                         alt="Avatar" 
-                        [span_80](start_span)crossOrigin="anonymous" //[span_80](end_span)
+                        crossOrigin="anonymous"
                         className="h-12 w-auto max-w-[120px] rounded-lg object-contain border border-cyber-dim shadow-sm bg-black" 
                     />
                 )}
                 <div>
-                    [span_81](start_span){creatorName && <div className="text-sm font-bold text-white font-mono">{creatorName}</div>} //[span_81](end_span)
+                    {creatorName && <div className="text-sm font-bold text-white font-mono">{creatorName}</div>}
                     {creatorTelegram && <a href={`https://t.me/${creatorTelegram.replace('@','')}`} target="_blank" rel="noreferrer" className="text-[10px] text-cyber-tech font-mono hover:underline">{creatorTelegram}</a>}
                 </div>
             </div>
             {clientName && (
-                [span_82](start_span)<div className="text-right"> {/*[span_82](end_span) */}
+                <div className="text-right">
                 <div className="text-[9px] text-gray-500 font-mono uppercase mb-0.5">Подготовлено для</div>
                 <div className="text-xs text-white font-bold font-mono truncate max-w-[200px] leading-relaxed p-0.5">{clientName}</div>
                 </div>
             )}
             </div>
-        [span_83](start_span))} {/*[span_83](end_span) */}
+        )}
       </div>
 
       {/* --- INFO BLOCK (PRINT) --- */}
       <div className="hidden print:grid grid-cols-2 gap-8 mb-8 text-sm">
          <div className="border border-gray-300 p-4 bg-gray-50">
             <span className="block text-xs text-gray-500 uppercase mb-1">ЗАКАЗЧИК</span>
-            <span className="font-bold text-lg block text-black">{clientName || [span_84](start_span)'_______________'}</span> {/*[span_84](end_span) */}
+            <span className="font-bold text-lg block text-black">{clientName || '_______________'}</span>
          </div>
          <div className="border border-gray-300 p-4 bg-gray-50">
             <span className="block text-xs text-gray-500 uppercase mb-1">СРОКИ РЕАЛИЗАЦИИ</span>
@@ -372,13 +372,13 @@ const Proposal: React.FC<ProposalProps> = ({
       </div>
 
       {/* --- SCREEN HEADER --- */}
-      <div className={`flex items-center justify-between border-b border-cyber-dim pb-4 ${(!creatorName && !clientName) ? [span_85](start_span)'' : 'pt-0'} px-4 sm:px-0 no-screenshot`}> {/*[span_85](end_span) */}
+      <div className={`flex items-center justify-between border-b border-cyber-dim pb-4 ${(!creatorName && !clientName) ? '' : 'pt-0'} px-4 sm:px-0 no-screenshot`}>
         <h2 className="text-2xl font-mono text-white font-bold tracking-tighter">СМЕТА_ПРОЕКТА</h2>
         <div className="flex gap-4 items-center">
             {isClientMode && onFork && (
                 <button onClick={onFork} className="text-xs font-mono text-cyber-tech hover:text-white underline uppercase">
                     🛠 СОЗДАТЬ КОПИЮ
-                [span_86](start_span)</button> //[span_86](end_span)
+                </button>
             )}
             {!isClientMode && onBack && (
             <button onClick={onBack} className="text-xs font-mono text-cyber-dim hover:text-white underline">РЕДАКТОР</button>
@@ -387,12 +387,12 @@ const Proposal: React.FC<ProposalProps> = ({
       </div>
       
       {/* --- EMPTY STATE WARNING --- */}
-      [span_87](start_span){isEmpty && ( //[span_87](end_span)
+      {isEmpty && (
         <div className="mx-4 sm:mx-0 mt-4 bg-yellow-500/10 border border-yellow-600 p-4 flex items-center justify-center flex-col text-center">
              <h3 className="text-yellow-500 font-bold font-mono text-lg mb-1">GUEST ACCESS // NO ACTIVE OFFERS</h3>
              <p className="text-xs text-gray-400 font-mono">
                 Для данного идентификатора нет активных расчетов или срок действия предложения истек.
-             [span_88](start_span)</p> //[span_88](end_span)
+             </p>
         </div>
       )}
 
@@ -400,8 +400,8 @@ const Proposal: React.FC<ProposalProps> = ({
       <div className="bg-zinc-900/50 border border-cyber-dim p-6 text-center relative overflow-hidden mx-4 sm:mx-0 print:border-4 print:border-black print:bg-white print:p-8 print:mb-8 print:shadow-none">
         <div className="absolute top-0 left-0 w-1 h-full bg-cyber-neon print:hidden"></div>
         <p className="text-xs font-mono text-gray-500 uppercase tracking-widest mb-1 print:text-black print:font-bold">Итоговая Стоимость Проекта</p>
-        <h1 className={`text-4xl sm:text-5xl font-mono font-black drop-shadow-[0_0_10px_rgba(204,255,0,0.3)] print:text-black print:drop-shadow-none print:text-6xl print:my-4 ${isEmpty ? [span_89](start_span)'text-gray-500' : 'text-cyber-neon'}`}> {/*[span_89](end_span) */}
-          {isEmpty ? [span_90](start_span)"NO ACTIVE OFFER" : formatCurrency(total)} {/*[span_90](end_span) */}
+        <h1 className={`text-4xl sm:text-5xl font-mono font-black drop-shadow-[0_0_10px_rgba(204,255,0,0.3)] print:text-black print:drop-shadow-none print:text-6xl print:my-4 ${isEmpty ? 'text-gray-500' : 'text-cyber-neon'}`}>
+          {isEmpty ? "NO ACTIVE OFFER" : formatCurrency(total)}
         </h1>
         <div className="mt-2 flex justify-center gap-2 text-[10px] font-mono text-gray-500 print:text-black print:text-xs">
            <span className="">СЛОЖНОСТЬ: x{safeRisk}</span>
@@ -411,34 +411,34 @@ const Proposal: React.FC<ProposalProps> = ({
       </div>
 
       {/* --- ITEMIZED TABLE --- */}
-      [span_91](start_span){!isEmpty && ( //[span_91](end_span)
+      {!isEmpty && (
       <div className="px-4 sm:px-0 mb-8 print:px-0">
           <h3 className="text-sm font-mono text-gray-400 mb-3 print:text-black print:font-bold uppercase print:mb-2 print:border-b print:border-black print:pb-1">Scope of Work (Детализация)</h3>
           <table className="w-full text-xs font-mono text-left text-gray-300 print:text-black">
             <thead className="text-[10px] text-gray-500 uppercase bg-zinc-900/50 print:bg-gray-100 print:text-black print:font-bold">
                 <tr>
-                    [span_92](start_span)<th className="p-2 print:border print:border-gray-300">Инструмент / Услуга</th> {/*[span_92](end_span) */}
+                    <th className="p-2 print:border print:border-gray-300">Инструмент / Услуга</th>
                     <th className="p-2 text-right print:border print:border-gray-300">Объем</th>
                     <th className="p-2 text-right hidden sm:table-cell print:table-cell print:border print:border-gray-300">Стоимость</th>
                 </tr>
             </thead>
-            [span_93](start_span)<tbody> //[span_93](end_span)
+            <tbody>
                 {/* Labor Line */}
                 <tr className="border-b border-zinc-800 print:border print:border-gray-300">
                     <td className="p-2 font-bold print:border-r print:border-gray-300">Специалист (Production & Engineering)</td>
                     <td className="p-2 text-right print:border-r print:border-gray-300">{safeLaborHours} ч.</td>
-                    [span_94](start_span)<td className="p-2 text-right">{formatCurrency(baseLaborCost)}</td> {/*[span_94](end_span) */}
+                    <td className="p-2 text-right">{formatCurrency(baseLaborCost)}</td>
                 </tr>
                 {/* AI Items */}
                 {items.map((item, idx) => (
-                    [span_95](start_span)<tr key={idx} className="border-b border-zinc-800 print:border print:border-gray-300"> {/*[span_95](end_span) */}
+                    <tr key={idx} className="border-b border-zinc-800 print:border print:border-gray-300">
                         <td className="p-2 print:border-r print:border-gray-300">
                             <span className="block text-white print:text-black font-semibold">{item.name}</span>
                             <span className="text-[9px] text-gray-500 print:text-gray-600">{item.category.toUpperCase()} Module</span>
-                        [span_96](start_span)</td> {/*[span_96](end_span) */}
+                        </td>
                         <td className="p-2 text-right print:border-r print:border-gray-300">{item.amount} {item.unit.substr(0,3)}</td>
                         <td className="p-2 text-right">
-                            [span_97](start_span){formatCurrency(item.amount * item.lightning_price * safeCurrencyRate * AI_BUFFER_MULTIPLIER)} {/*[span_97](end_span) */}
+                            {formatCurrency(item.amount * item.lightning_price * safeCurrencyRate * AI_BUFFER_MULTIPLIER)}
                         </td>
                     </tr>
                 ))}
@@ -447,42 +447,42 @@ const Proposal: React.FC<ProposalProps> = ({
       </div>
       )}
 
-      [span_98](start_span){/* --- ARGUMENTS --- */} //[span_98](end_span)
+      {/* --- ARGUMENTS --- */}
       <div className="grid grid-cols-1 gap-4 px-4 sm:px-0 print:grid-cols-2 print:gap-8 print:mb-8 print:px-0">
         {/* Risk Argumentation */}
         <div className="border border-zinc-800 bg-zinc-900/50 p-4 rounded-sm print:border print:border-gray-300 print:bg-white">
            <h4 className="text-white font-bold text-sm mb-2 flex items-center print:text-black uppercase">
              <span className="text-cyber-alert mr-2 print:hidden">🛡</span> 
-             [span_99](start_span)Надежность (Risk x{safeRisk}) {/*[span_99](end_span) */}
+             Надежность (Risk x{safeRisk})
            </h4>
            <p className="text-xs text-gray-400 leading-relaxed mb-2 print:text-black">
-             В стоимость заложен коэффициент <strong>x{safeRisk}</strong>. Это гарантия результата. [span_100](start_span){/*[span_100](end_span) */}
+             В стоимость заложен коэффициент <strong>x{safeRisk}</strong>. Это гарантия результата.
              Мы покрываем риски "галлюцинаций" нейросетей, технические сбои и необходимость перегенерации (отбраковка до 70%).
-           [span_101](start_span)</p> {/*[span_101](end_span) */}
+           </p>
         </div>
 
         {/* Speed Argumentation */}
-        {safeUrgency > 1.0 ? [span_102](start_span)( //[span_102](end_span)
+        {safeUrgency > 1.0 ? (
           <div className="border border-cyber-tech/50 bg-cyber-tech/10 p-4 rounded-sm print:border print:border-gray-300 print:bg-white">
             <h4 className="text-cyber-tech font-bold text-sm mb-2 flex items-center print:text-black uppercase">
               <span className="mr-2 print:hidden">🚀</span> 
               Срочность (Urgency x{safeUrgency})
             </h4>
             <p className="text-xs text-gray-300 leading-relaxed print:text-black">
-              Проект реализуется в приоритетном режиме. [span_103](start_span){/*[span_103](end_span) */}
+              Проект реализуется в приоритетном режиме. 
               {safeUrgency >= 2.0 
                 ? " Включает работу в выходные и ночное время (Crunch Mode)."
                 : " Fast Track: Выделенный ресурс команды."
               }
-            [span_104](start_span)</p> {/*[span_104](end_span) */}
+            </p>
           </div>
         ) : (
           <div className="border border-zinc-800 p-4 rounded-sm print:border print:border-gray-300 print:bg-white">
              <h4 className="text-gray-400 font-bold text-sm mb-2 flex items-center print:text-black uppercase">
                 Стандартный Режим
              </h4>
-             [span_105](start_span)<p className="text-xs text-gray-500 leading-relaxed print:text-black"> {/*[span_105](end_span) */}
-                Работы выполняются в штатном порядке согласно графику. Без наценок. [span_106](start_span){/*[span_106](end_span) */}
+             <p className="text-xs text-gray-500 leading-relaxed print:text-black">
+                Работы выполняются в штатном порядке согласно графику. Без наценок.
              </p>
           </div>
         )}
@@ -492,50 +492,50 @@ const Proposal: React.FC<ProposalProps> = ({
       <div className="bg-zinc-900 border border-zinc-800 p-4 print:hidden mx-4 sm:mx-0">
            <h4 className="text-gray-400 font-mono text-xs mb-4 uppercase text-center">СТРУКТУРА ЦЕННОСТИ</h4>
            <div className="h-40 w-full relative flex items-center justify-center">
-             {!isEmpty && total > 0 ? [span_107](start_span)( //[span_107](end_span)
+             {!isEmpty && total > 0 ? (
              <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
                     data={data}
                     cx="50%"
-                    [span_108](start_span)cy="50%" //[span_108](end_span)
+                    cy="50%"
                     innerRadius={45}
                     outerRadius={65}
                     paddingAngle={4}
                     dataKey="value"
-                    [span_109](start_span)stroke="none" //[span_109](end_span)
+                    stroke="none"
                   >
                     {data.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
-                    [span_110](start_span)))} {/*[span_110](end_span) */}
+                    ))}
                   </Pie>
                   <Tooltip 
                     contentStyle={{ backgroundColor: '#050505', border: '1px solid #333', borderRadius: '4px' }}
                     itemStyle={{ color: '#fff', fontSize: '11px', fontFamily: 'monospace' }}
-                    [span_111](start_span)formatter={(value: number) => formatCurrency(value)} //[span_111](end_span)
+                    formatter={(value: number) => formatCurrency(value)}
                   />
                 </PieChart>
              </ResponsiveContainer>
              ) : (
-                 [span_112](start_span)<div className="text-xs font-mono text-gray-600">NO DATA AVAILABLE</div> //[span_112](end_span)
+                 <div className="text-xs font-mono text-gray-600">NO DATA AVAILABLE</div>
              )}
            </div>
            {/* Custom Legend */}
            {!isEmpty && (
            <div className="flex flex-wrap justify-center gap-4 mt-2">
               <div className="flex items-center gap-2">
-                 [span_113](start_span)<div className="w-2 h-2 rounded-sm bg-[#ccff00]"></div> //[span_113](end_span)
+                 <div className="w-2 h-2 rounded-sm bg-[#ccff00]"></div>
                  <span className="text-[10px] font-mono text-gray-400 uppercase">AI Res</span>
               </div>
               <div className="flex items-center gap-2">
                  <div className="w-2 h-2 rounded-sm bg-[#00f0ff]"></div>
-                 [span_114](start_span)<span className="text-[10px] font-mono text-gray-400 uppercase">Labor</span> //[span_114](end_span)
+                 <span className="text-[10px] font-mono text-gray-400 uppercase">Labor</span>
               </div>
               {premiumValue > 100 && (
                 <div className="flex items-center gap-2">
                    <div className="w-2 h-2 rounded-sm bg-[#ff003c]"></div>
                    <span className="text-[10px] font-mono text-gray-400 uppercase">Multiplier</span>
-                [span_115](start_span)</div> //[span_115](end_span)
+                </div>
               )}
            </div>
            )}
@@ -544,20 +544,20 @@ const Proposal: React.FC<ProposalProps> = ({
       {/* --- FINANCIAL SUMMARY TABLE --- */}
       {!isEmpty && (
       <div className="border-t border-cyber-dim pt-4 px-4 sm:px-0 print:border-black print:mt-4 print:px-0">
-        [span_116](start_span)<h3 className="text-sm font-mono text-gray-400 mb-3 print:text-black print:font-bold uppercase">Финансовое Резюме</h3> //[span_116](end_span)
+        <h3 className="text-sm font-mono text-gray-400 mb-3 print:text-black print:font-bold uppercase">Финансовое Резюме</h3>
         <table className="w-full text-xs font-mono text-left text-gray-300 print:text-black">
           <tbody>
             <tr className="border-b border-zinc-800 print:border-gray-300">
               <td className="py-2">Production Costs (Ресурсы + Работа)</td>
               <td className="py-2 text-right">{formatCurrency(subtotal)}</td>
             </tr>
-            [span_117](start_span){premiumValue > 100 && ( //[span_117](end_span)
+            {premiumValue > 100 && (
               <tr className="border-b border-zinc-800 text-cyber-alert print:text-black print:border-gray-300">
                 <td className="py-2">Multipliers (Risk & Urgency Premium)</td>
                 <td className="py-2 text-right">{formatCurrency(premiumValue)}</td>
               </tr>
             )}
-             [span_118](start_span)<tr className="font-bold text-white print:text-black text-sm"> //[span_118](end_span)
+             <tr className="font-bold text-white print:text-black text-sm">
               <td className="py-4 pt-4">ИТОГО К ОПЛАТЕ</td>
               <td className="py-4 text-right pt-4">{formatCurrency(total)}</td>
             </tr>
@@ -567,18 +567,18 @@ const Proposal: React.FC<ProposalProps> = ({
       )}
 
       {/* --- FOOTER / SIGNATURE (PRINT) --- */}
-      [span_119](start_span)<div className="hidden print:block mt-16 pt-8 border-t-2 border-black"> //[span_119](end_span)
+      <div className="hidden print:block mt-16 pt-8 border-t-2 border-black">
           <div className="grid grid-cols-2 gap-16">
               <div>
                   <p className="text-xs uppercase font-bold mb-8 text-black">ИСПОЛНИТЕЛЬ:</p>
                   <div className="h-px bg-black w-full mb-2"></div>
-                  [span_120](start_span)<p className="text-xs text-gray-500">Подпись / М.П.</p> //[span_120](end_span)
+                  <p className="text-xs text-gray-500">Подпись / М.П.</p>
               </div>
               <div>
                   <p className="text-xs uppercase font-bold mb-8 text-black">ЗАКАЗЧИК:</p>
                   <div className="h-px bg-black w-full mb-2"></div>
                   <p className="text-xs text-gray-500">Подпись / М.П.</p>
-              [span_121](start_span)</div> //[span_121](end_span)
+              </div>
           </div>
           <p className="text-[9px] text-gray-400 mt-8 text-center font-mono">
               Generated by Anti-Doshirak Protocol // {currentDate}
@@ -586,14 +586,14 @@ const Proposal: React.FC<ProposalProps> = ({
       </div>
 
       {/* --- NEUROSKAM WATERMARK (SCREEN & PNG) --- */}
-      [span_122](start_span)<div className="mt-12 mb-4 px-4 sm:px-0 flex justify-end opacity-40 hover:opacity-100 transition-opacity print:hidden"> //[span_122](end_span)
+      <div className="mt-12 mb-4 px-4 sm:px-0 flex justify-end opacity-40 hover:opacity-100 transition-opacity print:hidden">
           <a 
             href="https://t.me/neuroskam" 
             target="_blank" 
             rel="noreferrer" 
             className="text-[10px] font-mono text-gray-600 hover:text-cyber-tech flex items-center gap-2 group decoration-0"
           >
-             [span_123](start_span)<span className="w-1.5 h-1.5 bg-gray-700 rounded-full group-hover:bg-cyber-tech transition-colors"></span> //[span_123](end_span)
+             <span className="w-1.5 h-1.5 bg-gray-700 rounded-full group-hover:bg-cyber-tech transition-colors"></span>
              dev by @neuroskam
           </a>
       </div>
@@ -602,35 +602,35 @@ const Proposal: React.FC<ProposalProps> = ({
       {!isClientMode && (
         <div className="grid grid-cols-2 gap-2 no-print px-4 sm:px-0 no-screenshot">
             <div className="col-span-2 flex gap-2">
-                [span_124](start_span){onMarketCheck && ( //[span_124](end_span)
+                {onMarketCheck && (
                     <button 
                     onClick={onMarketCheck}
                     className="flex-1 bg-zinc-800 text-cyber-tech border border-cyber-dim font-bold py-4 font-mono uppercase tracking-widest hover:border-cyber-tech hover:bg-zinc-700 transition-all flex justify-center items-center gap-2"
                     >
-                    [span_125](start_span)<span className="hidden sm:inline">⚖️</span> Калибровка {/*[span_125](end_span) */}
+                    <span className="hidden sm:inline">⚖️</span> Калибровка
                     </button>
                 )}
                 {onShareClick && (
                     <button 
-                    [span_126](start_span)onClick={onShareClick} //[span_126](end_span)
+                    onClick={onShareClick}
                     className="flex-[2] bg-cyber-neon text-black font-bold py-4 font-mono uppercase tracking-widest hover:shadow-[0_0_15px_rgba(204,255,0,0.4)] transition-all flex justify-center items-center gap-2"
                     >
                         <span>🚀</span> ОТПРАВИТЬ КЛИЕНТУ
-                    [span_127](start_span)</button> //[span_127](end_span)
+                    </button>
                 )}
             </div>
             <button 
                 onClick={() => setShowTextModal(true)}
-                [span_128](start_span)className="bg-zinc-900 text-gray-300 border border-zinc-700 font-bold py-3 font-mono uppercase text-xs hover:text-white hover:border-white transition-all" //[span_128](end_span)
+                className="bg-zinc-900 text-gray-300 border border-zinc-700 font-bold py-3 font-mono uppercase text-xs hover:text-white hover:border-white transition-all"
             >
                 TXT REPORT
             </button>
             <button 
                 disabled={isExporting}
                 onClick={handleScreenshot}
-                [span_129](start_span)className="bg-zinc-900 text-gray-300 border border-zinc-700 font-bold py-3 font-mono uppercase text-xs hover:text-white hover:border-white transition-all disabled:opacity-50" //[span_129](end_span)
+                className="bg-zinc-900 text-gray-300 border border-zinc-700 font-bold py-3 font-mono uppercase text-xs hover:text-white hover:border-white transition-all disabled:opacity-50"
             >
-                {isExporting ? [span_130](start_span)'...' : 'СОХРАНИТЬ PNG'} {/*[span_130](end_span) */}
+                {isExporting ? '...' : 'СОХРАНИТЬ PNG'}
             </button>
         </div>
       )}
@@ -640,13 +640,13 @@ const Proposal: React.FC<ProposalProps> = ({
         <div className="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black via-black to-transparent z-50 max-w-md mx-auto flex gap-3 no-print no-screenshot">
            <button 
              onClick={onTender}
-             [span_131](start_span)disabled={isEmpty} //[span_131](end_span)
+             disabled={isEmpty}
              className="flex-1 border border-cyber-dim text-gray-300 font-bold py-3 font-mono uppercase text-xs hover:border-cyber-tech hover:text-cyber-tech transition-all disabled:opacity-30 disabled:hover:border-cyber-dim disabled:hover:text-gray-300 disabled:cursor-not-allowed"
            >
              СРАВНИТЬ ЦЕНЫ
            </button>
            <button 
-             [span_132](start_span)onClick={handleApproveClick} //[span_132](end_span)
+             onClick={handleApproveClick}
              disabled={isEmpty}
              className="flex-1 bg-cyber-neon text-black font-bold py-3 font-mono uppercase text-xs hover:shadow-[0_0_15px_rgba(204,255,0,0.4)] transition-all disabled:opacity-30 disabled:hover:shadow-none disabled:cursor-not-allowed"
            >
@@ -656,6 +656,6 @@ const Proposal: React.FC<ProposalProps> = ({
       )}
     </div>
   );
-}; [span_133](start_span)//[span_133](end_span)
+};
 
 export default Proposal;
