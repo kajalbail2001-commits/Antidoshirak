@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 
 interface ShareModalProps {
@@ -10,10 +9,47 @@ interface ShareModalProps {
 const ShareModal: React.FC<ShareModalProps> = ({ url, code, onClose }) => {
   const [copiedType, setCopiedType] = useState<'url' | 'code' | null>(null);
 
-  const copyToClipboard = (text: string, type: 'url' | 'code') => {
-    navigator.clipboard.writeText(text);
-    setCopiedType(type);
-    setTimeout(() => setCopiedType(null), 2000);
+  // Универсальная функция копирования (работает и в Chrome, и в Telegram WebView)
+  const copyToClipboard = async (text: string, type: 'url' | 'code') => {
+    try {
+      // Попытка 1: Современный API (если работает)
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        setCopiedType(type);
+        setTimeout(() => setCopiedType(null), 2000);
+      } else {
+        throw new Error("Clipboard API unavailable");
+      }
+    } catch (err) {
+      // Попытка 2: Старый надежный метод (для Telegram/WebView)
+      try {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        
+        // Делаем элемент невидимым, но существующим
+        textArea.style.position = "fixed";
+        textArea.style.left = "-9999px";
+        textArea.style.top = "0";
+        document.body.appendChild(textArea);
+        
+        textArea.focus();
+        textArea.select();
+        
+        const successful = document.execCommand('copy');
+        document.body.removeChild(textArea);
+        
+        if (successful) {
+          setCopiedType(type);
+          setTimeout(() => setCopiedType(null), 2000);
+        } else {
+          throw new Error("Fallback failed");
+        }
+      } catch (fallbackErr) {
+        console.error("Copy failed:", fallbackErr);
+        // Крайний случай: просто показываем текст пользователю
+        alert(`Не удалось скопировать автоматически. Пожалуйста, выделите и скопируйте вручную:\n\n${text}`);
+      }
+    }
   };
 
   return (
