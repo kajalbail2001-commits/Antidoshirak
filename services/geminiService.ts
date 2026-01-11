@@ -1,9 +1,8 @@
 import { Tool } from '../types';
 
 // MODELS
-// STRICTLY QWEN 3 CODER FREE as requested.
-// The ':free' suffix is crucial for $0 balance accounts on OpenRouter.
-const DEFAULT_MODEL = "qwen/qwen3-coder:free"; 
+// Using Qwen 2.5 Coder 32B as requested.
+const DEFAULT_MODEL = "qwen/qwen-2.5-coder-32b-instruct:free"; 
 
 interface ParsedItem {
   tool_id: string;
@@ -54,15 +53,16 @@ const deduplicateTools = (items: ParsedItem[]): ParsedItem[] => {
 };
 
 const makeServerlessRequest = async (systemPrompt: string, userContent: any) => {
-    // Calling the Netlify function proxy
     const endpoint = "/.netlify/functions/analyze";
     
     try {
-        console.log(`[AI] Calling Qwen (${DEFAULT_MODEL})...`);
+        console.log(`[AI] Calling Qwen via Proxy...`);
         
-        // Timeout controller to catch hangs before the browser defaults
+        // CLIENT SIDE TIMEOUT: 60 Seconds
+        // Note: The Netlify Free Tier serverless function might still kill it at 10s, 
+        // but this ensures the browser doesn't give up first.
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 9500); // 9.9s hard limit (Netlify kills at 10s)
+        const timeoutId = setTimeout(() => controller.abort(), 60000); 
 
         const response = await fetch(endpoint, {
             method: "POST",
@@ -86,9 +86,8 @@ const makeServerlessRequest = async (systemPrompt: string, userContent: any) => 
             const errorMessage = errorData.details || errorData.error || `Server error: ${response.status}`;
             console.error("[AI] Server Error Detail:", errorData);
             
-            // If it's a 502, it's likely a timeout from Netlify
-            if (response.status === 502) {
-                throw new Error("Time Limit Exceeded. Qwen думал слишком долго.");
+            if (response.status === 504 || response.status === 502) {
+                throw new Error("Qwen думал дольше 10 секунд (Лимит сервера). Попробуйте сократить запрос.");
             }
             throw new Error(errorMessage);
         }
@@ -97,7 +96,7 @@ const makeServerlessRequest = async (systemPrompt: string, userContent: any) => 
 
     } catch (e: any) {
         if (e.name === 'AbortError') {
-             throw new Error("Timeout: Qwen не успел ответить за 10 сек.");
+             throw new Error("Browser Timeout: Ответ не получен за 60 сек.");
         }
         console.error("[AI] Request failed:", e);
         throw new Error(e.message || "AI Service Unavailable");
@@ -107,17 +106,16 @@ const makeServerlessRequest = async (systemPrompt: string, userContent: any) => 
 export const parseBriefWithGemini = async (
   brief: string,
   availableTools: Tool[],
-  _apiKey?: string, // Legacy
+  _apiKey?: string, // Legacy param, ignored now
   attachment: Attachment | null = null
 ): Promise<ParsedItem[]> => {
   
-  // Minimalist tool list to save tokens
   const toolsInfo = availableTools.map(t => ({
     id: t.id,
     desc: `${t.name} (${t.category})`
   }));
 
-  // ULTRA-SHORT PROMPT to save generation time and avoid 502 Timeouts
+  // Condensed Prompt to help Qwen be faster
   const systemPrompt = `
     TASK: Map request to tools.
     TOOLS: ${JSON.stringify(toolsInfo)}
