@@ -17,7 +17,7 @@ interface ProposalProps {
   onTender?: () => void;
   onMarketCheck?: () => void;
   onShareClick?: () => void; 
-  onFork?: () => void;
+  onFork?: () => void; 
   
   // Branding
   clientName?: string;
@@ -34,8 +34,7 @@ const Proposal: React.FC<ProposalProps> = ({
   
   const [showTextModal, setShowTextModal] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
-  const [generatedImage, setGeneratedImage] = useState<string | null>(null);
-  
+  const [generatedImage, setGeneratedImage] = useState<string | null>(null); // For WebView modal
   const [proposalStatus, setProposalStatus] = useState<'viewing' | 'accepted'>('viewing');
   const proposalRef = useRef<HTMLDivElement>(null);
 
@@ -48,6 +47,8 @@ const Proposal: React.FC<ProposalProps> = ({
   const isEmpty = items.length === 0 && safeLaborHours === 0;
 
   // --- CALCULATIONS ---
+
+  // 1. Costs
   const rawAiCost = items.reduce((acc, item) => acc + (item.amount * item.lightning_price * safeCurrencyRate), 0);
   const bufferedAiCost = rawAiCost * AI_BUFFER_MULTIPLIER;
   const baseLaborCost = safeLaborHours * safeHourlyRate;
@@ -55,9 +56,10 @@ const Proposal: React.FC<ProposalProps> = ({
   const total = subtotal * safeRisk * safeUrgency;
   const premiumValue = Math.max(0, total - subtotal);
 
-  // Timeline
+  // 2. Timeline (Heuristic)
   const baseDays = Math.max(1, Math.ceil(safeLaborHours / 5));
   let timelineString = "";
+  
   if (isEmpty) {
       timelineString = "---";
   } else if (safeUrgency >= 2.0) {
@@ -88,25 +90,29 @@ const Proposal: React.FC<ProposalProps> = ({
     if (!proposalRef.current) return;
     setIsExporting(true);
     
-    // Скролл наверх, чтобы не было глюков верстки
+    // Ensure clean state without scroll issues
     window.scrollTo(0, 0);
+    // Allow images to render fully
     await new Promise(r => setTimeout(r, 500));
 
     try {
         const canvas = await html2canvas(proposalRef.current, {
-            backgroundColor: '#050505', 
-            scale: 2, 
-            useCORS: true, 
+            backgroundColor: '#050505', // Preserve dark theme
+            scale: 2, // Standard quality is enough for mobile sharing, 3 was too heavy for some devices
+            useCORS: true, // Crucial for Imgur images
             allowTaint: true,
             logging: false,
             ignoreElements: (element) => {
+                // Ignore elements with specific class (buttons)
                 return element.classList.contains('no-screenshot');
             }
         });
-        
-        const dataUrl = canvas.toDataURL('image/png');
-        setGeneratedImage(dataUrl); // Показываем модалку с картинкой
 
+        const dataUrl = canvas.toDataURL('image/png');
+        setGeneratedImage(dataUrl);
+
+        // Try direct download for Desktop, but keep modal logic for mobile fallback
+        // We will show the modal regardless because it's safer for cross-browser
     } catch (error) {
         console.error("Screenshot failed:", error);
         alert("Не удалось создать скриншот. Возможно, браузер блокирует canvas.");
@@ -192,8 +198,7 @@ const Proposal: React.FC<ProposalProps> = ({
                 <div className="h-px bg-gradient-to-r from-transparent via-cyber-neon to-transparent w-full my-4"></div>
 
                 <p className="text-sm text-gray-300 font-mono mb-8 leading-relaxed">
-                    Предложение принято.
-                    Система зафиксировала договоренности.
+                    Предложение принято. Система зафиксировала договоренности. 
                     <br/>
                     Инициализация рабочего процесса...
                 </p>
@@ -206,7 +211,7 @@ const Proposal: React.FC<ProposalProps> = ({
                         className="block w-full bg-cyber-neon text-black font-bold py-4 font-mono uppercase tracking-widest hover:shadow-[0_0_25px_rgba(204,255,0,0.6)] hover:bg-white transition-all mb-6"
                      >
                         ОТКРЫТЬ ЧАТ С ИСПОЛНИТЕЛЕМ
-                      </a>
+                     </a>
                 ) : (
                     <div className="p-4 border border-dashed border-zinc-700 text-gray-500 font-mono text-xs mb-6">
                         КОНТАКТЫ ИСПОЛНИТЕЛЯ НЕ УКАЗАНЫ.<br/>ИСПОЛЬЗУЙТЕ СТАНДАРТНЫЙ КАНАЛ СВЯЗИ.
@@ -239,7 +244,6 @@ const Proposal: React.FC<ProposalProps> = ({
                     <h3 className="text-cyber-neon font-mono text-xl tracking-wider">ТЕКСТОВОЙ ОТЧЕТ</h3>
                     <button onClick={() => setShowTextModal(false)} className="text-gray-500 hover:text-white font-mono">[X]</button>
                 </div>
-                
                 <div className="flex-1 overflow-hidden relative border border-zinc-700 bg-black">
                      <textarea 
                         readOnly 
@@ -299,7 +303,7 @@ const Proposal: React.FC<ProposalProps> = ({
                     onClick={downloadImageDirectly}
                     className="w-full bg-cyber-tech text-black font-bold py-3 font-mono uppercase hover:bg-white transition-all"
                  >
-                     СКАЧАТЬ ФАЙЛ
+                    СКАЧАТЬ ФАЙЛ
                  </button>
                  <button 
                     onClick={() => setGeneratedImage(null)}
@@ -320,7 +324,7 @@ const Proposal: React.FC<ProposalProps> = ({
          <div className="text-right">
              {creatorAvatarUrl && (
                  <img 
-                    src={creatorAvatarUrl}
+                    src={creatorAvatarUrl} 
                     alt="Logo" 
                     crossOrigin="anonymous" 
                     className="w-24 h-24 object-contain ml-auto mb-2 rounded-lg border border-gray-200" 
