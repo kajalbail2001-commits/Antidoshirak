@@ -62,7 +62,7 @@ const makeServerlessRequest = async (systemPrompt: string, userContent: any) => 
         
         // Timeout controller to catch hangs before the browser defaults
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 9500); // 9.5s hard limit (Netlify kills at 10s)
+        const timeoutId = setTimeout(() => controller.abort(), 9500); // 9.9s hard limit (Netlify kills at 10s)
 
         const response = await fetch(endpoint, {
             method: "POST",
