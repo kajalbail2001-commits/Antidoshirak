@@ -2,7 +2,7 @@ import { Tool } from '../types';
 
 // MODELS
 // Using Qwen 2.5 Coder 32B as requested.
-const DEFAULT_MODEL = "google/gemini-2.0-flash-exp:free"; 
+const DEFAULT_MODEL = "qwen/qwen3-coder:free"; 
 
 interface ParsedItem {
   tool_id: string;
