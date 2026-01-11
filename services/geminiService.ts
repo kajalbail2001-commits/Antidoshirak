@@ -1,13 +1,7 @@
-
 import { Tool } from '../types';
 
-// ⚠️ WARNING: There is no money on this key. Hackers, please do not break it. It is for a free demo.
-const OPENROUTER_API_KEY = "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";
-
-// STRICTLY SET SINGLE MODEL AS REQUESTED
-const MODELS = [
-  "qwen/qwen3-coder:free"
-];
+// MODELS
+const DEFAULT_MODEL = "qwen/qwen-2.5-coder-32b-instruct:free";
 
 interface ParsedItem {
   tool_id: string;
@@ -57,70 +51,45 @@ const deduplicateTools = (items: ParsedItem[]): ParsedItem[] => {
   return Array.from(toolMap.values());
 };
 
-const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
-const makeOpenRouterRequest = async (systemPrompt: string, userContent: any) => {
-    const modelId = MODELS[0]; // Only one model allowed now
-    const MAX_RETRIES = 5; // Aggressive retries for free tier
-    let lastError: any;
-
-    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-        try {
-            console.log(`[AI] Attempt ${attempt + 1}/${MAX_RETRIES} with model: ${modelId}`);
-            
-            const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-              method: "POST",
-              headers: {
-                "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
-                "HTTP-Referer": window.location.origin,
-                "X-Title": "Anti-Doshirak App",
+const makeServerlessRequest = async (systemPrompt: string, userContent: any) => {
+    // We now call our own Netlify Function instead of OpenRouter directly
+    // This keeps the API KEY hidden on the server side.
+    const endpoint = "/.netlify/functions/analyze";
+    
+    try {
+        console.log(`[AI] Calling Serverless Proxy...`);
+        
+        const response = await fetch(endpoint, {
+            method: "POST",
+            headers: {
                 "Content-Type": "application/json"
-              },
-              body: JSON.stringify({
-                model: modelId,
+            },
+            body: JSON.stringify({
+                model: DEFAULT_MODEL,
                 messages: [
-                  { role: "system", content: systemPrompt },
-                  { role: "user", content: userContent }
-                ],
-                temperature: 0.1, 
-                top_p: 0.1
-              })
-            });
+                    { role: "system", content: systemPrompt },
+                    { role: "user", content: userContent }
+                ]
+            })
+        });
 
-            if (response.ok) {
-                return response;
-            } else {
-                const errText = await response.text();
-                const status = response.status;
-                
-                // If Rate Limit (429) or Server Error (5xx), wait and retry
-                if (status === 429 || status >= 500) {
-                    const delay = 2000 * Math.pow(2, attempt) + (Math.random() * 1000); // Exponential backoff + jitter
-                    console.warn(`[AI] Rate limited or Error (${status}). Retrying in ${Math.round(delay)}ms...`);
-                    await wait(delay);
-                    lastError = new Error(`Model ${modelId} Error ${status}: ${errText}`);
-                    continue;
-                }
-                
-                // For other errors (400, 401), fail immediately
-                throw new Error(`Model ${modelId} Fatal Error ${status}: ${errText}`);
-            }
-
-        } catch (e) {
-            console.warn(`[AI] Network error on attempt ${attempt + 1}:`, e);
-            lastError = e;
-            const delay = 2000 * Math.pow(2, attempt);
-            await wait(delay);
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.error || `Server error: ${response.status}`);
         }
-    }
 
-    throw lastError || new Error("AI service is currently unavailable after multiple attempts.");
+        return await response.json();
+
+    } catch (e: any) {
+        console.error("[AI] Request failed:", e);
+        throw new Error(e.message || "AI Service Unavailable");
+    }
 };
 
 export const parseBriefWithGemini = async (
   brief: string,
   availableTools: Tool[],
-  _apiKey?: string,
+  _apiKey?: string, // Legacy param, ignored now
   attachment: Attachment | null = null
 ): Promise<ParsedItem[]> => {
   
@@ -161,6 +130,7 @@ export const parseBriefWithGemini = async (
 
   let userContent: any = brief;
   
+  // Handle Multimodal (Images) if present
   if (attachment) {
     userContent = [
       { type: "text", text: brief || "Analyze this image/screenshot and break down the AI production components required to recreate or produce it." },
@@ -174,9 +144,7 @@ export const parseBriefWithGemini = async (
   }
 
   try {
-    const response = await makeOpenRouterRequest(systemPrompt, userContent);
-
-    const json = await response.json();
+    const json = await makeServerlessRequest(systemPrompt, userContent);
     const content = json.choices?.[0]?.message?.content;
 
     if (!content) return [];
