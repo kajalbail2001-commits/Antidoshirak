@@ -4,6 +4,18 @@ import { AI_BUFFER_MULTIPLIER, RISK_LABELS, URGENCY_LABELS } from '../constants'
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import html2canvas from 'html2canvas';
 
+// Объявляем типы для Телеграма
+declare global {
+  interface Window {
+    Telegram?: {
+      WebApp?: {
+        initData: string;
+        close: () => void;
+      };
+    };
+  }
+}
+
 interface ProposalProps {
   items: ProjectItem[];
   hourlyRate: number;
@@ -33,7 +45,7 @@ const Proposal: React.FC<ProposalProps> = ({
 }) => {
   
   const [showTextModal, setShowTextModal] = useState(false);
-  const [isExporting, setIsExporting] = useState(false);
+  const [isSending, setIsSending] = useState(false); // Состояние отправки
   const [proposalStatus, setProposalStatus] = useState<'viewing' | 'accepted'>('viewing');
   const proposalRef = useRef<HTMLDivElement>(null);
 
@@ -82,16 +94,23 @@ const Proposal: React.FC<ProposalProps> = ({
     return new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB', maximumFractionDigits: 0 }).format(val);
   }
 
-  // --- МЕХАНИКА: МОМЕНТАЛЬНОЕ СКАЧИВАНИЕ ---
-  const handleScreenshot = async () => {
+  // --- ЛОГИКА ОТПРАВКИ ЧЕРЕЗ БОТА ---
+  const handleSendToChat = async () => {
     if (!proposalRef.current) return;
-    setIsExporting(true);
     
-    // Скролл вверх (лечит белые полосы)
-    window.scrollTo(0, 0);
+    // Проверка: мы в Телеграме?
+    const tgInitData = window.Telegram?.WebApp?.initData;
+    if (!tgInitData) {
+        alert("⚠️ Эта кнопка работает только внутри Telegram!\n\nОткройте мини-приложение через бота.");
+        return;
+    }
+
+    setIsSending(true);
+    window.scrollTo(0, 0); // Скролл вверх
     await new Promise(r => setTimeout(r, 500));
 
     try {
+        // 1. Делаем скриншот
         const canvas = await html2canvas(proposalRef.current, {
             backgroundColor: '#050505', 
             scale: 2, 
@@ -103,23 +122,30 @@ const Proposal: React.FC<ProposalProps> = ({
             }
         });
         
-        const imgData = canvas.toDataURL('image/png');
-        
-        // Создаем ссылку
-        const link = document.createElement('a');
-        link.download = `Estimate_${clientName || 'Project'}_${new Date().toISOString().split('T')[0]}.png`;
-        link.href = imgData;
-        
-        // ВАЖНО: Добавляем в DOM, кликаем, удаляем (Фикс для Nekogram/WebView)
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        const imageBase64 = canvas.toDataURL('image/png');
 
-    } catch (error) {
-        console.error("Screenshot failed:", error);
-        alert("Ошибка. Попробуйте открыть сайт в Chrome.");
+        // 2. Отправляем на наш сервер (функцию Netlify)
+        const response = await fetch('/.netlify/functions/send-estimate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                imageBase64: imageBase64,
+                initData: tgInitData // Ключ к тому, КУДА слать
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || "Ошибка сервера");
+        }
+
+        alert("✅ Смета отправлена!\nПроверьте чат с ботом.");
+
+    } catch (error: any) {
+        console.error("Sending failed:", error);
+        alert("Ошибка отправки: " + error.message);
     } finally {
-        setIsExporting(false);
+        setIsSending(false);
     }
   };
 
@@ -192,8 +218,7 @@ const Proposal: React.FC<ProposalProps> = ({
                 <div className="h-px bg-gradient-to-r from-transparent via-cyber-neon to-transparent w-full my-4"></div>
 
                 <p className="text-sm text-gray-300 font-mono mb-8 leading-relaxed">
-                    Предложение принято.
-                    Система зафиксировала договоренности.
+                    Предложение принято. Система зафиксировала договоренности. 
                     <br/>
                     Инициализация рабочего процесса...
                 </p>
@@ -320,7 +345,6 @@ const Proposal: React.FC<ProposalProps> = ({
             {clientName && (
                 <div className="text-right">
                 <div className="text-[9px] text-gray-500 font-mono uppercase mb-0.5">Подготовлено для</div>
-                {/* 👇 ВОТ ОН, ФИКС ОБРЕЗАНИЯ ШРИФТА (leading-relaxed p-0.5) 👇 */}
                 <div className="text-xs text-white font-bold font-mono truncate max-w-[200px] leading-relaxed p-0.5">{clientName}</div>
                 </div>
             )}
@@ -595,11 +619,11 @@ const Proposal: React.FC<ProposalProps> = ({
                 TXT REPORT
             </button>
             <button 
-                disabled={isExporting}
-                onClick={handleScreenshot}
+                disabled={isSending}
+                onClick={handleSendToChat}
                 className="bg-zinc-900 text-gray-300 border border-zinc-700 font-bold py-3 font-mono uppercase text-xs hover:text-white hover:border-white transition-all disabled:opacity-50"
             >
-                {isExporting ? '...' : 'СКАЧАТЬ PNG'}
+                {isSending ? 'ОТПРАВКА...' : '📥 ОТПРАВИТЬ СЕБЕ'}
             </button>
         </div>
       )}
