@@ -212,7 +212,7 @@ const Proposal: React.FC<ProposalProps> = ({
       {(creatorName || creatorTelegram || clientName) && (
         <div className="bg-zinc-900 border-b border-cyber-dim p-4 flex justify-between items-center mb-4">
         <div className="flex items-center gap-3">
-            {creatorAvatarUrl && <img src={creatorAvatarUrl} alt="Avatar" crossOrigin="anonymous" className="h-12 w-auto max-w-[120px] rounded-lg object-contain border border-cyber-dim shadow-sm bg-black" />}
+            {creatorAvatarUrl && <img src={creatorAvatarUrl} alt="Avatar" crossOrigin="anonymous" className="h-20 w-auto max-w-[250px] rounded-lg object-contain border border-cyber-dim shadow-sm bg-black" />}
             <div>
                 {creatorName && <div className="text-sm font-bold text-white font-mono">{creatorName}</div>}
                 {creatorTelegram && <a href={`https://t.me/${creatorTelegram.replace('@','')}`} target="_blank" rel="noreferrer" className="text-[10px] text-cyber-tech font-mono hover:underline">{creatorTelegram}</a>}
