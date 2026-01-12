@@ -122,7 +122,7 @@ const Proposal: React.FC<ProposalProps> = ({
     await new Promise(r => setTimeout(r, 500));
     try {
         const canvas = await html2canvas(proposalRef.current, { backgroundColor: '#050505', scale: 3, useCORS: true, ignoreElements: (el) => el.classList.contains('no-screenshot') });
-        const imageBase64 = canvas.toDataURL('image/jpeg', 0.9); // Сжатие
+        const imageBase64 = canvas.toDataURL('image/jpeg', 1.0); // Сжатие
         const response = await fetch('/.netlify/functions/send-estimate', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -272,6 +272,33 @@ const Proposal: React.FC<ProposalProps> = ({
           </table>
       </div>
       )}
+      
+      <div className="grid grid-cols-1 gap-4 px-4 sm:px-0 print:grid-cols-2 print:gap-8 print:mb-8 print:px-0">
+        <div className="border border-zinc-800 bg-zinc-900/50 p-4 rounded-sm print:border print:border-gray-300 print:bg-white">
+           <h4 className="text-white font-bold text-sm mb-2 flex items-center print:text-black uppercase">
+             <span className="text-cyber-alert mr-2 print:hidden">🛡</span> Надежность (Risk x{safeRisk})
+           </h4>
+           <p className="text-xs text-gray-400 leading-relaxed mb-2 print:text-black">
+             В стоимость заложен коэффициент <strong>x{safeRisk}</strong>. Это гарантия результата, покрывающая риски итераций.
+           </p>
+        </div>
+
+        {safeUrgency > 1.0 ? (
+          <div className="border border-cyber-tech/50 bg-cyber-tech/10 p-4 rounded-sm print:border print:border-gray-300 print:bg-white">
+            <h4 className="text-cyber-tech font-bold text-sm mb-2 flex items-center print:text-black uppercase">
+              <span className="mr-2 print:hidden">🚀</span> Срочность (Urgency x{safeUrgency})
+            </h4>
+            <p className="text-xs text-gray-300 leading-relaxed print:text-black">
+              Проект реализуется в приоритетном режиме (Fast Track / Crunch Mode).
+            </p>
+          </div>
+        ) : (
+          <div className="border border-zinc-800 p-4 rounded-sm print:border print:border-gray-300 print:bg-white">
+             <h4 className="text-gray-400 font-bold text-sm mb-2 flex items-center print:text-black uppercase">Стандартный Режим</h4>
+             <p className="text-xs text-gray-500 leading-relaxed print:text-black">Работы выполняются в штатном порядке согласно графику.</p>
+          </div>
+        )}
+      </div>
 
       {/* CHARTS */}
       <div className="bg-zinc-900 border border-zinc-800 p-4 print:hidden mx-4 sm:mx-0">
@@ -287,7 +314,50 @@ const Proposal: React.FC<ProposalProps> = ({
              </ResponsiveContainer>
              )}
            </div>
+
+        {!isEmpty && (
+           <div className="flex flex-wrap justify-center gap-4 mt-2">
+              <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-sm bg-[#ccff00]"></div>
+                  <span className="text-[10px] font-mono text-gray-400 uppercase">AI Tech</span>
+              </div>
+              <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-sm bg-[#00f0ff]"></div>
+                  <span className="text-[10px] font-mono text-gray-400 uppercase">Labor</span>
+              </div>
+              {premiumValue > 100 && (
+                <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-sm bg-[#ff003c]"></div>
+                    <span className="text-[10px] font-mono text-gray-400 uppercase">Multiplier</span>
+                </div>
+              )}
+           </div>
+           )}
       </div>
+
+      {!isEmpty && (
+      <div className="border-t border-cyber-dim pt-4 px-4 sm:px-0 print:border-black print:mt-4 print:px-0">
+        <h3 className="text-sm font-mono text-gray-400 mb-3 print:text-black print:font-bold uppercase">Финансовое Резюме</h3>
+        <table className="w-full text-xs font-mono text-left text-gray-300 print:text-black">
+          <tbody>
+            <tr className="border-b border-zinc-800 print:border-gray-300">
+              <td className="py-2">Production Costs (Ресурсы + Работа)</td>
+              <td className="py-2 text-right">{formatCurrency(subtotal)}</td>
+            </tr>
+            {premiumValue > 100 && (
+              <tr className="border-b border-zinc-800 text-cyber-alert print:text-black print:border-gray-300">
+                <td className="py-2">Multipliers (Risk & Urgency Premium)</td>
+                <td className="py-2 text-right">{formatCurrency(premiumValue)}</td>
+              </tr>
+            )}
+             <tr className="font-bold text-white print:text-black text-sm">
+              <td className="py-4 pt-4">ИТОГО К ОПЛАТЕ</td>
+              <td className="py-4 text-right pt-4">{formatCurrency(total)}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      )}
 
       {/* FOOTER */}
       <div className="mt-12 mb-4 px-4 sm:px-0 flex justify-end opacity-40 hover:opacity-100 transition-opacity print:hidden">
