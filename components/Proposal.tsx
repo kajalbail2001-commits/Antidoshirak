@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { ProjectItem, RiskLevel, UrgencyLevel } from '../types';
-import { AI_BUFFER_MULTIPLIER, RISK_LABELS, URGENCY_LABELS } from '../constants';
+import { AI_BUFFER_MULTIPLIER } from '../constants';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import html2canvas from 'html2canvas';
 
@@ -79,11 +79,11 @@ const Proposal: React.FC<ProposalProps> = ({
 
   // Chart Data
   const data = [
-    { name: 'Технический стек (AI Res)', value: Math.max(0, Number(bufferedAiCost.toFixed(0))), color: '#ccff00' },
-    { name: 'Разработка (Labor)', value: Math.max(0, Number(baseLaborCost.toFixed(0))), color: '#00f0ff' },
+    { name: 'AI Ресурсы (Система)', value: Math.max(0, Number(bufferedAiCost.toFixed(0))), color: '#ccff00' },
+    { name: 'Работа (База)', value: Math.max(0, Number(baseLaborCost.toFixed(0))), color: '#00f0ff' },
   ];
   if (premiumValue > 100) {
-    data.push({ name: 'Коэфф. Сложности', value: Math.max(0, Number(premiumValue.toFixed(0))), color: '#ff003c' });
+    data.push({ name: 'Коэфф. Ценности', value: Math.max(0, Number(premiumValue.toFixed(0))), color: '#ff003c' });
   }
   
   const formatCurrency = (val: number) => {
@@ -91,7 +91,7 @@ const Proposal: React.FC<ProposalProps> = ({
     return new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB', maximumFractionDigits: 0 }).format(val);
   }
 
-  // --- ACTIONS ---
+  // --- ACTIONS (С МОЗГАМИ НОВОЙ ВЕРСИИ) ---
   
   // 1. СКАЧАТЬ PNG
   const handleDownload = async () => {
@@ -100,7 +100,13 @@ const Proposal: React.FC<ProposalProps> = ({
     window.scrollTo(0, 0);
     await new Promise(r => setTimeout(r, 500));
     try {
-        const canvas = await html2canvas(proposalRef.current, { backgroundColor: '#050505', scale: 2, useCORS: true, ignoreElements: (el) => el.classList.contains('no-screenshot') });
+        const canvas = await html2canvas(proposalRef.current, { 
+            backgroundColor: '#050505', 
+            scale: 4, 
+            useCORS: true, 
+            allowTaint: true,
+            ignoreElements: (el) => el.classList.contains('no-screenshot') 
+        });
         const link = document.createElement('a');
         link.download = `Estimate_${Date.now()}.png`;
         link.href = canvas.toDataURL('image/png');
@@ -121,8 +127,14 @@ const Proposal: React.FC<ProposalProps> = ({
     window.scrollTo(0, 0);
     await new Promise(r => setTimeout(r, 500));
     try {
-        const canvas = await html2canvas(proposalRef.current, { backgroundColor: '#050505', scale: 3, useCORS: true, ignoreElements: (el) => el.classList.contains('no-screenshot') });
-        const imageBase64 = canvas.toDataURL('image/jpeg', 1.0); // Сжатие
+        const canvas = await html2canvas(proposalRef.current, { 
+            backgroundColor: '#050505', 
+            scale: 4, 
+            useCORS: true, 
+            allowTaint: true,
+            ignoreElements: (el) => el.classList.contains('no-screenshot') 
+        });
+        const imageBase64 = canvas.toDataURL('image/jpeg', 1.0); 
         const response = await fetch('/.netlify/functions/send-estimate', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -157,13 +169,13 @@ const Proposal: React.FC<ProposalProps> = ({
         text += `• Специалист (Production & Engineering, ${safeLaborHours}ч): ${formatCurrency(baseLaborCost)}\n`;
         
         if (premiumValue > 100) {
-            text += `\n📈 КОЭФФИЦИЕНТЫ:\n`;
-            text += `• Сложность (Risk x${safeRisk}): ${RISK_LABELS[safeRisk] || ''}\n`;
-            if (safeUrgency > 1.0) text += `• Срочность (Urgency x${safeUrgency}): ${URGENCY_LABELS[safeUrgency] || ''}\n`;
+            text += `\n📈 ЦЕННОСТЬ:\n`;
+            text += `• Надежность (Risk x${safeRisk})\n`;
+            if (safeUrgency > 1.0) text += `• Скорость (Urgency x${safeUrgency})\n`;
             text += `• Доп. ценность: ${formatCurrency(premiumValue)}\n`;
         }
         
-        text += `\n🛡 АРГУМЕНТАЦИЯ:\n- Проект реализуется в приоритетном режиме.\n- В стоимость заложены риски генерации.\n`;
+        text += `\n🛡 ФИЛОСОФИЯ РЕЗУЛЬТАТА:\n- Вы платите за то, что решение работает стабильно.\n- В цену заложены риски и итерации.\n`;
     }
     
     if (creatorName) text += `\n--------------------------------\nС уважением,\n${creatorName} ${creatorTelegram ? `(${creatorTelegram})` : ''}`;
@@ -254,6 +266,89 @@ const Proposal: React.FC<ProposalProps> = ({
         </div>
       </div>
 
+      {/* --- ТЕКСТЫ ИЗ СТАРОЙ ВЕРСИИ (ВОЗВРАЩЕНО!) --- */}
+      <div className="grid grid-cols-1 gap-4 px-4 sm:px-0 print:grid-cols-2 print:gap-8 print:mb-8 print:px-0">
+        
+        {/* Risk Argumentation */}
+        <div className="border border-zinc-800 bg-zinc-900/50 p-4 rounded-sm print:border print:border-gray-300 print:bg-white">
+           <h4 className="text-white font-bold text-sm mb-2 flex items-center print:text-black uppercase">
+             <span className="text-cyber-alert mr-2 print:hidden">🛡</span> СНИЖЕНИЕ РИСКОВ И ОШИБОК
+           </h4>
+           <p className="text-xs text-gray-400 leading-relaxed mb-2 print:text-black">
+             Вы платите за то, что решение работает стабильно и не требует постоянного контроля. 
+             В цену заложен коэффициент надежности (x{safeRisk}).
+           </p>
+           {safeRisk > 1.5 && (
+             <p className="text-[10px] text-cyber-alert mt-1 font-mono print:text-black print:font-bold">
+               * Учтена высокая неопределенность задачи или работа с NDA.
+             </p>
+           )}
+        </div>
+
+        {/* Speed Argumentation */}
+        {safeUrgency > 1.0 ? (
+          <div className="border border-cyber-tech/50 bg-cyber-tech/10 p-4 rounded-sm print:border print:border-gray-300 print:bg-white">
+            <h4 className="text-cyber-tech font-bold text-sm mb-2 flex items-center print:text-black uppercase">
+              <span className="mr-2 print:hidden">🚀</span> СКОРОСТЬ КАК ЦЕННОСТЬ
+            </h4>
+            <p className="text-xs text-gray-300 leading-relaxed print:text-black">
+              Срочная реализация (x{safeUrgency}) требует перераспределения ресурсов и приоритизации. 
+              Время запуска — это деньги, и за ускорение вы платите справедливую цену.
+            </p>
+          </div>
+        ) : (
+          <div className="border border-zinc-800 p-4 rounded-sm print:border print:border-gray-300 print:bg-white">
+             <h4 className="text-gray-400 font-bold text-sm mb-2 flex items-center print:text-black uppercase">Стандартный Режим</h4>
+             <p className="text-xs text-gray-500 leading-relaxed print:text-black">Работы выполняются в штатном порядке согласно графику.</p>
+          </div>
+        )}
+      </div>
+
+      {/* CHARTS */}
+      <div className="bg-zinc-900 border border-zinc-800 p-4 print:hidden mx-4 sm:mx-0">
+           <h4 className="text-gray-400 font-mono text-xs mb-4 uppercase text-center">СТРУКТУРА ЦЕННОСТИ</h4>
+           <div className="h-40 w-full relative flex items-center justify-center">
+             {!isEmpty && total > 0 && (
+             <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={data} cx="50%" cy="50%" innerRadius={45} outerRadius={65} paddingAngle={4} dataKey="value" stroke="none">
+                    {data.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
+                  </Pie>
+                  <Tooltip contentStyle={{ backgroundColor: '#050505', border: '1px solid #333' }} itemStyle={{ color: '#fff', fontSize: '11px', fontFamily: 'monospace' }} formatter={(value: number) => formatCurrency(value)}/>
+                </PieChart>
+             </ResponsiveContainer>
+             )}
+           </div>
+
+            {/* Custom Legend */}
+           {!isEmpty && (
+           <div className="flex flex-wrap justify-center gap-4 mt-2">
+              <div className="flex items-center gap-2">
+                 <div className="w-2 h-2 rounded-sm bg-[#ccff00]"></div>
+                 <span className="text-[10px] font-mono text-gray-400 uppercase">AI Res</span>
+              </div>
+              <div className="flex items-center gap-2">
+                 <div className="w-2 h-2 rounded-sm bg-[#00f0ff]"></div>
+                 <span className="text-[10px] font-mono text-gray-400 uppercase">Работа</span>
+              </div>
+              {premiumValue > 100 && (
+                <div className="flex items-center gap-2">
+                   <div className="w-2 h-2 rounded-sm bg-[#ff003c]"></div>
+                   <span className="text-[10px] font-mono text-gray-400 uppercase">Коэфф.</span>
+                </div>
+              )}
+           </div>
+           )}
+      </div>
+
+      {/* --- ФИЛОСОФИЯ (ВОЗВРАЩЕНО!) --- */}
+      <div className="p-4 bg-zinc-900 rounded border border-zinc-800 mx-4 sm:mx-0 print:border-black print:bg-transparent mb-4">
+        <h4 className="text-xs font-bold text-gray-400 mb-2 print:text-black">ФИЛОСОФИЯ РЕЗУЛЬТАТА</h4>
+        <p className="text-[10px] text-gray-500 italic print:text-black">
+          "Промт сам по себе никому не нужен. Это как продавать рецепт вместо готового блюда. Мы продаем результат: экономию времени, рост конверсии и готовые активы."
+        </p>
+      </div>
+
       {/* TABLE */}
       {!isEmpty && (
       <div className="px-4 sm:px-0 mb-8 print:px-0">
@@ -272,69 +367,8 @@ const Proposal: React.FC<ProposalProps> = ({
           </table>
       </div>
       )}
-      
-      <div className="grid grid-cols-1 gap-4 px-4 sm:px-0 print:grid-cols-2 print:gap-8 print:mb-8 print:px-0">
-        <div className="border border-zinc-800 bg-zinc-900/50 p-4 rounded-sm print:border print:border-gray-300 print:bg-white">
-           <h4 className="text-white font-bold text-sm mb-2 flex items-center print:text-black uppercase">
-             <span className="text-cyber-alert mr-2 print:hidden">🛡</span> Надежность (Risk x{safeRisk})
-           </h4>
-           <p className="text-xs text-gray-400 leading-relaxed mb-2 print:text-black">
-             В стоимость заложен коэффициент <strong>x{safeRisk}</strong>. Это гарантия результата, покрывающая риски итераций.
-           </p>
-        </div>
 
-        {safeUrgency > 1.0 ? (
-          <div className="border border-cyber-tech/50 bg-cyber-tech/10 p-4 rounded-sm print:border print:border-gray-300 print:bg-white">
-            <h4 className="text-cyber-tech font-bold text-sm mb-2 flex items-center print:text-black uppercase">
-              <span className="mr-2 print:hidden">🚀</span> Срочность (Urgency x{safeUrgency})
-            </h4>
-            <p className="text-xs text-gray-300 leading-relaxed print:text-black">
-              Проект реализуется в приоритетном режиме (Fast Track / Crunch Mode).
-            </p>
-          </div>
-        ) : (
-          <div className="border border-zinc-800 p-4 rounded-sm print:border print:border-gray-300 print:bg-white">
-             <h4 className="text-gray-400 font-bold text-sm mb-2 flex items-center print:text-black uppercase">Стандартный Режим</h4>
-             <p className="text-xs text-gray-500 leading-relaxed print:text-black">Работы выполняются в штатном порядке согласно графику.</p>
-          </div>
-        )}
-      </div>
-
-      {/* CHARTS */}
-      <div className="bg-zinc-900 border border-zinc-800 p-4 print:hidden mx-4 sm:mx-0">
-           <div className="h-40 w-full relative flex items-center justify-center">
-             {!isEmpty && total > 0 && (
-             <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie data={data} cx="50%" cy="50%" innerRadius={45} outerRadius={65} paddingAngle={4} dataKey="value" stroke="none">
-                    {data.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
-                  </Pie>
-                  <Tooltip contentStyle={{ backgroundColor: '#050505', border: '1px solid #333' }} itemStyle={{ color: '#fff', fontSize: '11px', fontFamily: 'monospace' }} formatter={(value: number) => formatCurrency(value)}/>
-                </PieChart>
-             </ResponsiveContainer>
-             )}
-           </div>
-
-        {!isEmpty && (
-           <div className="flex flex-wrap justify-center gap-4 mt-2">
-              <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-sm bg-[#ccff00]"></div>
-                  <span className="text-[10px] font-mono text-gray-400 uppercase">AI Tech</span>
-              </div>
-              <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-sm bg-[#00f0ff]"></div>
-                  <span className="text-[10px] font-mono text-gray-400 uppercase">Labor</span>
-              </div>
-              {premiumValue > 100 && (
-                <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-sm bg-[#ff003c]"></div>
-                    <span className="text-[10px] font-mono text-gray-400 uppercase">Multiplier</span>
-                </div>
-              )}
-           </div>
-           )}
-      </div>
-
+      {/* TABLE SUMMARY (NEW STYLE BUT AT BOTTOM) */}
       {!isEmpty && (
       <div className="border-t border-cyber-dim pt-4 px-4 sm:px-0 print:border-black print:mt-4 print:px-0">
         <h3 className="text-sm font-mono text-gray-400 mb-3 print:text-black print:font-bold uppercase">Финансовое Резюме</h3>
@@ -366,7 +400,7 @@ const Proposal: React.FC<ProposalProps> = ({
           </a>
       </div>
 
-      {/* ACTIONS */}
+      {/* ACTIONS (С ВАЖНЫМИ ФИКСАМИ КНОПОК) */}
       {!isClientMode && (
         <div className="grid grid-cols-2 gap-2 no-print px-4 sm:px-0 no-screenshot">
             <div className="col-span-2 flex gap-2">
