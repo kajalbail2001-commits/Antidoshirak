@@ -121,8 +121,8 @@ const Proposal: React.FC<ProposalProps> = ({
     window.scrollTo(0, 0);
     await new Promise(r => setTimeout(r, 500));
     try {
-        const canvas = await html2canvas(proposalRef.current, { backgroundColor: '#050505', scale: 1, useCORS: true, ignoreElements: (el) => el.classList.contains('no-screenshot') });
-        const imageBase64 = canvas.toDataURL('image/jpeg', 0.6); // Сжатие
+        const canvas = await html2canvas(proposalRef.current, { backgroundColor: '#050505', scale: 3, useCORS: true, ignoreElements: (el) => el.classList.contains('no-screenshot') });
+        const imageBase64 = canvas.toDataURL('image/jpeg', 0.9); // Сжатие
         const response = await fetch('/.netlify/functions/send-estimate', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
