@@ -4,110 +4,111 @@ export const AI_BUFFER_MULTIPLIER = 1.3; // 30% buffer for failed generations/it
 
 // Manual Data from User JSON
 export const FALLBACK_DATA: PriceData = {
-  meta: {
-    last_updated: "2026-01-08"
-  },
-  tools: [
-    // --- VIDEO ---
-    { id: "video_sora_2_pro", name: "SORA 2 Pro", lightning_price: 50.0, unit: "generation", category: "video" },
-    { id: "video_sora_2", name: "SORA 2", lightning_price: 18.0, unit: "generation", category: "video" },
-    { id: "video_veo_3_1", name: "VEO 3.1", lightning_price: 119.0, unit: "generation", category: "video" },
-    { id: "video_veo_3_1_fast", name: "VEO 3.1 Fast", lightning_price: 19.0, unit: "generation", category: "video" },
-    { id: "video_veo_3_1_fast_relax", name: "VEO 3.1 Fast Relax", lightning_price: 13.0, unit: "generation", category: "video" },
-    { id: "video_runway_gen4", name: "Runway Gen-4", lightning_price: 14.0, unit: "generation", category: "video" },
-    { id: "video_runway_gen3", name: "Runway Gen-3", lightning_price: 14.0, unit: "generation", category: "video" },
-    { id: "video_runway_style", name: "RW: Video Stylizer", lightning_price: 14.0, unit: "generation", category: "video" },
-    { id: "video_luma", name: "Luma Dream Machine", lightning_price: 14.0, unit: "generation", category: "video" },
-    { id: "video_kling", name: "Kling AI", lightning_price: 6.0, unit: "generation", category: "video" },
-    { id: "video_pika", name: "Pika Full", lightning_price: 12.0, unit: "generation", category: "video" },
-    { id: "video_hailuo_02", name: "Hailuo MiniMax 02", lightning_price: 14.0, unit: "generation", category: "video" },
-    { id: "video_hailuo_01", name: "Hailuo MiniMax 01", lightning_price: 8.5, unit: "generation", category: "video" },
-    { id: "video_mj", name: "MidJourney Video", lightning_price: 15.0, unit: "generation", category: "video" },
-    { id: "video_seedance", name: "Seedance Lite/Pro", lightning_price: 6.0, unit: "generation", category: "video" },
-    { id: "video_higgsfield", name: "Higgsfield", lightning_price: 12.0, unit: "generation", category: "video" },
-    { id: "video_topaz", name: "Topaz AI", lightning_price: 1.0, unit: "second", category: "video" },
-    { id: "video_upscale_runway", name: "RunWay Upscale x4", lightning_price: 5.0, unit: "generation", category: "video" },
-    { id: "video_upscale_clarity", name: "Clarity Upscaler", lightning_price: 1.0, unit: "generation", category: "video" },
+    meta: {
+        last_updated: "2026-01-08"
+    },
+    tools: [
+        // --- VIDEO ---
+        { id: "video_sora_2_pro", name: "SORA 2 Pro", lightning_price: 50.0, unit: "generation", category: "video" },
+        { id: "video_sora_2", name: "SORA 2", lightning_price: 18.0, unit: "generation", category: "video" },
+        { id: "video_veo_3_1", name: "VEO 3.1", lightning_price: 119.0, unit: "generation", category: "video" },
+        { id: "video_veo_3_1_fast", name: "VEO 3.1 Fast", lightning_price: 19.0, unit: "generation", category: "video" },
+        { id: "video_veo_3_1_fast_relax", name: "VEO 3.1 Fast Relax", lightning_price: 13.0, unit: "generation", category: "video" },
+        { id: "video_runway_gen4", name: "Runway Gen-4", lightning_price: 14.0, unit: "generation", category: "video" },
+        { id: "video_runway_gen3", name: "Runway Gen-3", lightning_price: 14.0, unit: "generation", category: "video" },
+        { id: "video_runway_style", name: "RW: Video Stylizer", lightning_price: 14.0, unit: "generation", category: "video" },
+        { id: "video_luma", name: "Luma Dream Machine", lightning_price: 14.0, unit: "generation", category: "video" },
+        { id: "video_kling", name: "Kling AI", lightning_price: 6.0, unit: "generation", category: "video" },
+        { id: "video_pika", name: "Pika Full", lightning_price: 12.0, unit: "generation", category: "video" },
+        { id: "video_hailuo_02", name: "Hailuo MiniMax 02", lightning_price: 14.0, unit: "generation", category: "video" },
+        { id: "video_hailuo_01", name: "Hailuo MiniMax 01", lightning_price: 8.5, unit: "generation", category: "video" },
+        { id: "video_mj", name: "MidJourney Video", lightning_price: 15.0, unit: "generation", category: "video" },
+        { id: "video_seedance", name: "Seedance Lite/Pro", lightning_price: 6.0, unit: "generation", category: "video" },
+        { id: "video_higgsfield", name: "Higgsfield", lightning_price: 12.0, unit: "generation", category: "video" },
+        { id: "video_topaz", name: "Topaz AI", lightning_price: 1.0, unit: "second", category: "video" },
+        { id: "video_upscale_runway", name: "RunWay Upscale x4", lightning_price: 5.0, unit: "generation", category: "video" },
+        { id: "video_upscale_clarity", name: "Clarity Upscaler", lightning_price: 1.0, unit: "generation", category: "video" },
 
-    // --- AVATAR & LIPSYNC ---
-    { id: "avatar_heygen_4", name: "HeyGen Avatar 4", lightning_price: 1.2, unit: "second", category: "avatar" },
-    { id: "avatar_runway_act_two", name: "RunWay Act-Two", lightning_price: 2.0, unit: "second", category: "avatar" },
-    { id: "avatar_hedra", name: "Hedra", lightning_price: 2.7, unit: "second", category: "avatar" },
-    { id: "avatar_sync_runway", name: "Lipsync (Runway)", lightning_price: 2.7, unit: "second", category: "avatar" },
-    { id: "avatar_sync_kling", name: "Lipsync (Kling)", lightning_price: 1.2, unit: "second", category: "avatar" },
-    { id: "avatar_creation", name: "Avatar Creation", lightning_price: 0.87, unit: "second", category: "avatar" }, // 13.00 / 15 sec
+        // --- AVATAR & LIPSYNC ---
+        { id: "avatar_heygen_4", name: "HeyGen Avatar 4", lightning_price: 1.2, unit: "second", category: "avatar" },
+        { id: "avatar_runway_act_two", name: "RunWay Act-Two", lightning_price: 2.0, unit: "second", category: "avatar" },
+        { id: "avatar_hedra", name: "Hedra", lightning_price: 2.7, unit: "second", category: "avatar" },
+        { id: "avatar_sync_runway", name: "Lipsync (Runway)", lightning_price: 2.7, unit: "second", category: "avatar" },
+        { id: "avatar_sync_kling", name: "Lipsync (Kling)", lightning_price: 1.2, unit: "second", category: "avatar" },
+        { id: "avatar_creation", name: "Avatar Creation", lightning_price: 0.87, unit: "second", category: "avatar" }, // 13.00 / 15 sec
 
-    // --- IMAGE ---
-    { id: "img_flux_1_1_ultra", name: "Flux 1.1 Pro Ultra", lightning_price: 2.5, unit: "generation", category: "image" },
-    { id: "img_flux_1_1_pro", name: "Flux 1.1 Pro", lightning_price: 1.5, unit: "generation", category: "image" },
-    { id: "img_flux_1_pro", name: "Flux 1 Pro", lightning_price: 0.8, unit: "generation", category: "image" },
-    { id: "img_flux_1", name: "Flux 1", lightning_price: 0.3, unit: "generation", category: "image" },
-    { id: "img_flux_lora", name: "Flux LoRa Train", lightning_price: 0.18, unit: "generation", category: "image" },
-    { id: "img_recraft_v3_vec", name: "Recraft v3 Vector", lightning_price: 4.0, unit: "generation", category: "image" },
-    { id: "img_recraft_v3", name: "Recraft v3", lightning_price: 2.0, unit: "generation", category: "image" },
-    { id: "img_dalle_3_turbo", name: "Dall-e 3 Turbo", lightning_price: 1.5, unit: "generation", category: "image" },
-    { id: "img_imagen_4", name: "Google Imagen 4", lightning_price: 1.5, unit: "generation", category: "image" },
-    { id: "img_mj_edit", name: "MidJourney Editor", lightning_price: 1.5, unit: "generation", category: "image" },
-    { id: "img_mj", name: "MidJourney Full", lightning_price: 1.0, unit: "generation", category: "image" },
-    { id: "img_ideogram", name: "Ideogram", lightning_price: 0.9, unit: "generation", category: "image" },
-    { id: "img_sora", name: "SORA Images", lightning_price: 0.8, unit: "generation", category: "image" },
-    { id: "img_seedream_45", name: "Seedream 4.5", lightning_price: 2.0, unit: "generation", category: "image" },
-    { id: "img_seedream", name: "Seedream", lightning_price: 1.2, unit: "generation", category: "image" },
-    { id: "img_kling_kolors", name: "Kling Kolors", lightning_price: 1.1, unit: "generation", category: "image" },
-    { id: "img_faceswap", name: "Face Swap", lightning_price: 0.15, unit: "generation", category: "image" },
-    { id: "img_upscale_syntx", name: "Syntx Enhancer x2", lightning_price: 0.4, unit: "generation", category: "image" },
-    { id: "img_mix", name: "Image Mixing", lightning_price: 1.0, unit: "generation", category: "image" },
-    { id: "img_describe", name: "Image Describe", lightning_price: 1.0, unit: "generation", category: "image" },
+        // --- IMAGE ---
+        { id: "img_flux_1_1_ultra", name: "Flux 1.1 Pro Ultra", lightning_price: 2.5, unit: "generation", category: "image" },
+        { id: "img_flux_1_1_pro", name: "Flux 1.1 Pro", lightning_price: 1.5, unit: "generation", category: "image" },
+        { id: "img_flux_1_pro", name: "Flux 1 Pro", lightning_price: 0.8, unit: "generation", category: "image" },
+        { id: "img_flux_1", name: "Flux 1", lightning_price: 0.3, unit: "generation", category: "image" },
+        { id: "img_flux_lora", name: "Flux LoRa Train", lightning_price: 0.18, unit: "generation", category: "image" },
+        { id: "img_recraft_v3_vec", name: "Recraft v3 Vector", lightning_price: 4.0, unit: "generation", category: "image" },
+        { id: "img_recraft_v3", name: "Recraft v3", lightning_price: 2.0, unit: "generation", category: "image" },
+        { id: "img_dalle_3_turbo", name: "Dall-e 3 Turbo", lightning_price: 1.5, unit: "generation", category: "image" },
+        { id: "img_imagen_4", name: "Google Imagen 4", lightning_price: 1.5, unit: "generation", category: "image" },
+        { id: "img_mj_edit", name: "MidJourney Editor", lightning_price: 1.5, unit: "generation", category: "image" },
+        { id: "img_mj", name: "MidJourney Full", lightning_price: 1.0, unit: "generation", category: "image" },
+        { id: "img_ideogram", name: "Ideogram", lightning_price: 0.9, unit: "generation", category: "image" },
+        { id: "img_sora", name: "SORA Images", lightning_price: 0.8, unit: "generation", category: "image" },
+        { id: "img_seedream_45", name: "Seedream 4.5", lightning_price: 2.0, unit: "generation", category: "image" },
+        { id: "img_seedream", name: "Seedream", lightning_price: 1.2, unit: "generation", category: "image" },
+        { id: "img_kling_kolors", name: "Kling Kolors", lightning_price: 1.1, unit: "generation", category: "image" },
+        { id: "img_faceswap", name: "Face Swap", lightning_price: 0.15, unit: "generation", category: "image" },
+        { id: "img_upscale_syntx", name: "Syntx Enhancer x2", lightning_price: 0.4, unit: "generation", category: "image" },
+        { id: "img_mix", name: "Image Mixing", lightning_price: 1.0, unit: "generation", category: "image" },
+        { id: "img_describe", name: "Image Describe", lightning_price: 1.0, unit: "generation", category: "image" },
 
-    // --- AUDIO ---
-    { id: "audio_elevenlabs", name: "ElevenLabs Music", lightning_price: 16.0, unit: "generation", category: "audio" },
-    { id: "audio_udio", name: "Udio AI", lightning_price: 10.0, unit: "generation", category: "audio" },
-    { id: "audio_suno", name: "Suno AI", lightning_price: 8.0, unit: "generation", category: "audio" },
-    { id: "audio_tts_eleven", name: "ElevenLabs TTS", lightning_price: 2.0, unit: "generation", category: "audio" },
-    { id: "audio_tts_openai", name: "OpenAI TTS", lightning_price: 1.0, unit: "generation", category: "audio" },
-    
-    // --- TEXT/LLM ---
-    { id: "text_gpt4o", name: "GPT-4o", lightning_price: 1.0, unit: "generation", category: "text" },
-    { id: "text_claude_3_5_sonnet", name: "Claude 3.5 Sonnet", lightning_price: 1.5, unit: "generation", category: "text" },
-    { id: "text_gemini_pro", name: "Gemini 1.5 Pro", lightning_price: 0.5, unit: "generation", category: "text" }
-  ]
+        // --- AUDIO ---
+        { id: "audio_elevenlabs", name: "ElevenLabs Music", lightning_price: 16.0, unit: "generation", category: "audio" },
+        { id: "audio_udio", name: "Udio AI", lightning_price: 10.0, unit: "generation", category: "audio" },
+        { id: "audio_suno", name: "Suno AI", lightning_price: 8.0, unit: "generation", category: "audio" },
+        { id: "audio_tts_eleven", name: "ElevenLabs TTS", lightning_price: 2.0, unit: "generation", category: "audio" },
+        { id: "audio_tts_openai", name: "OpenAI TTS", lightning_price: 1.0, unit: "generation", category: "audio" },
+
+        // --- TEXT/LLM ---
+        { id: "text_gpt4o", name: "GPT-4o", lightning_price: 1.0, unit: "generation", category: "text" },
+        { id: "text_claude_3_5_sonnet", name: "Claude 3.5 Sonnet", lightning_price: 1.5, unit: "generation", category: "text" },
+        { id: "text_gemini_pro", name: "Gemini 1.5 Pro", lightning_price: 0.5, unit: "generation", category: "text" }
+    ]
 };
 
 export const RISK_LABELS: Record<number, string> = {
-  [RiskLevel.LOW]: '🟢 Четкое ТЗ (Low Risk)',
-  [RiskLevel.MID]: '🟡 Есть вопросы (Mid Risk)',
-  [RiskLevel.HIGH]: '🔴 Полный Хаос (High Risk)'
+    [RiskLevel.LOW]: '🟢 Четкое ТЗ (Low Risk)',
+    [RiskLevel.MID]: '🟡 Есть вопросы (Mid Risk)',
+    [RiskLevel.HIGH]: '🔴 Полный Хаос (High Risk)'
 };
 
 export const URGENCY_LABELS: Record<number, string> = {
-  [UrgencyLevel.STANDARD]: 'Стандарт (7-14 дн)',
-  [UrgencyLevel.ASAP]: '🔥 Срочно (3-5 дн)',
-  [UrgencyLevel.YESTERDAY]: '☠️ Вчера (48ч)'
+    [UrgencyLevel.STANDARD]: 'Стандарт (7-14 дн)',
+    [UrgencyLevel.ASAP]: '🔥 Срочно (3-5 дн)',
+    [UrgencyLevel.YESTERDAY]: '☠️ Вчера (48ч)'
 };
 
 export const DEFAULT_SETTINGS: AppSettings = {
-  hourlyRate: 500, // RUB - Default
-  packagePriceUsd: 1690, // Syntx Rate (RUB)
-  packageTokens: 680,  // Syntx Rate
-  targetMonthlyIncome: 100000, // Default Target
-  billableHoursPerMonth: 170, // Standard work month (approx 21 days * 8h)
-  creatorName: "",
-  creatorTelegram: "",
-  creatorAvatarUrl: "",
-  clientName: ""
+    hourlyRate: 500, // RUB - Default
+    packagePriceUsd: 1690, // Syntx Rate (RUB)
+    packageTokens: 680,  // Syntx Rate
+    targetMonthlyIncome: 100000, // Default Target
+    billableHoursPerMonth: 170, // Standard work month (approx 21 days * 8h)
+    creatorName: "",
+    creatorTelegram: "",
+    creatorAvatarUrl: "",
+    clientName: "",
+    customTools: []
 };
 
 export const CYBER_QUOTES = [
-  "Вы платите не за кнопки, а за то, что я знаю, какие не нажимать.",
-  "Нейросеть — это кисть. Я — художник, который знает, как ее держать.",
-  "Дешево, быстро, качественно. Выберите два (или купите мой промпт).",
-  "Скупой платит дважды: сначала школьнику, потом мне за переделку.",
-  "Мой час стоит дорого, потому что я потратил 1000 часов, чтобы сделать это за 5 минут.",
-  "AI не заменит вас. Вас заменит тот, кто умеет пользоваться AI лучше вас.",
-  "В мире копипаста оригинал стоит миллионы.",
-  "Генерация — это рулетка. Я продаю выигрышные номера.",
-  "Клиент прав, пока не попросит сделать 'как в том вирусном ролике' за 500 рублей.",
-  "Будущее уже здесь, просто оно неравномерно распределено (и стоит денег)."
+    "Вы платите не за кнопки, а за то, что я знаю, какие не нажимать.",
+    "Нейросеть — это кисть. Я — художник, который знает, как ее держать.",
+    "Дешево, быстро, качественно. Выберите два (или купите мой промпт).",
+    "Скупой платит дважды: сначала школьнику, потом мне за переделку.",
+    "Мой час стоит дорого, потому что я потратил 1000 часов, чтобы сделать это за 5 минут.",
+    "AI не заменит вас. Вас заменит тот, кто умеет пользоваться AI лучше вас.",
+    "В мире копипаста оригинал стоит миллионы.",
+    "Генерация — это рулетка. Я продаю выигрышные номера.",
+    "Клиент прав, пока не попросит сделать 'как в том вирусном ролике' за 500 рублей.",
+    "Будущее уже здесь, просто оно неравномерно распределено (и стоит денег)."
 ];
 
 export const MARKET_RATES: MarketRatesData = {
@@ -199,31 +200,31 @@ export const MARKET_RATES: MarketRatesData = {
             }
         },
         {
-           id: "svc_music_track",
-           name: "AI Саундтрек (2 мин)",
-           category: "Audio Gen",
-           base_unit_amount: 1, // track
-           unit_label: "трек",
-           tiers: {
-               tier_1: {
-                   label: "Suno/Udio Raw",
-                   price_range: [500, 1500],
-                   sla_days: 1,
-                   desc: "Сырая генерация, возможны артефакты. Без сведения."
-               },
-               tier_2: {
-                   label: "Mixed & Mastered",
-                   price_range: [5000, 15000],
-                   sla_days: 3,
-                   desc: "Склейка из лучших кусков, мастеринг, стемы (раздельные дорожки), чистка шумов."
-               },
-               tier_3: {
-                   label: "Commercial Jingle",
-                   price_range: [30000, 80000],
-                   sla_days: 5,
-                   desc: "Написание лирики под бренд, вокал (Voice Conversion), полная очистка прав."
-               }
-           }
-       }
+            id: "svc_music_track",
+            name: "AI Саундтрек (2 мин)",
+            category: "Audio Gen",
+            base_unit_amount: 1, // track
+            unit_label: "трек",
+            tiers: {
+                tier_1: {
+                    label: "Suno/Udio Raw",
+                    price_range: [500, 1500],
+                    sla_days: 1,
+                    desc: "Сырая генерация, возможны артефакты. Без сведения."
+                },
+                tier_2: {
+                    label: "Mixed & Mastered",
+                    price_range: [5000, 15000],
+                    sla_days: 3,
+                    desc: "Склейка из лучших кусков, мастеринг, стемы (раздельные дорожки), чистка шумов."
+                },
+                tier_3: {
+                    label: "Commercial Jingle",
+                    price_range: [30000, 80000],
+                    sla_days: 5,
+                    desc: "Написание лирики под бренд, вокал (Voice Conversion), полная очистка прав."
+                }
+            }
+        }
     ]
 };

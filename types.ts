@@ -50,6 +50,7 @@ export interface AppSettings {
   creatorTelegram?: string;
   creatorAvatarUrl?: string;
   clientName?: string;
+  customTools?: Tool[];
 }
 
 export interface SharedQuote {
