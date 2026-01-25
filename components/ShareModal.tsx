@@ -76,7 +76,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ url, code, onClose }) => {
 
   return (
     <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
-      <div className="bg-cyber-black border border-cyber-neon w-full max-w-lg p-6 relative shadow-[0_0_50px_rgba(204,255,0,0.2)]">
+      <div className="bg-cyber-black border border-cyber-neon w-full max-w-lg p-6 relative shadow-2xl">
 
         {/* Header */}
         <div className="flex justify-between items-center mb-6 pb-4 border-b border-zinc-800">

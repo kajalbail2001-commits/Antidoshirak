@@ -10,6 +10,8 @@ import Marketplace from './components/Marketplace';
 import ShareModal from './components/ShareModal';
 import SplashScreen from './components/SplashScreen';
 
+
+
 // Settings Icon
 const SettingsIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
@@ -294,15 +296,16 @@ function App() {
   if (viewMode === 'landing') {
     return (
       <div className="min-h-screen bg-cyber-black flex flex-col items-center justify-between p-4 animate-fade-in relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-zinc-900/50 via-cyber-black to-cyber-black -z-10"></div>
+        <div className="absolute top-0 left-0 w-full h-full -z-10"></div>
 
         <div className="h-[10vh]"></div>
 
         <div className="text-center space-y-6 z-10 flex flex-col items-center">
+          <img src="/logo.png" alt="Logo" className="w-32 h-32 md:w-48 md:h-48 object-contain mb-4 filter drop-shadow-[0_0_15px_rgba(204,255,0,0.3)]" />
           <h1 className="text-5xl md:text-8xl font-black font-mono text-white tracking-tighter glitch-text leading-none drop-shadow-[0_0_15px_rgba(255,0,60,0.5)]" data-text="ANTI-DOSHIRAK">
             ANTI-DOSHIRAK
           </h1>
-          <div className="border border-cyber-tech text-cyber-tech bg-cyber-tech/10 px-4 py-1 text-sm md:text-base font-bold font-mono tracking-widest uppercase shadow-[0_0_10px_rgba(0,240,255,0.2)]">
+          <div className="border border-cyber-tech text-cyber-tech bg-cyber-tech/10 px-4 py-1 text-sm md:text-base font-bold font-mono tracking-widest uppercase">
             v1.0 PROTOCOL
           </div>
           <p className="text-cyber-dim font-mono text-xs md:text-sm tracking-widest uppercase mt-4">
@@ -313,9 +316,11 @@ function App() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl z-10 my-12">
           <button
             onClick={() => setViewMode('editor')}
-            className="group relative p-8 border border-zinc-800 bg-zinc-900/50 hover:bg-zinc-900 hover:border-cyber-neon transition-all duration-300"
+            className="group relative p-8 border border-zinc-800 bg-zinc-900/50 hover:bg-zinc-900 hover:border-cyber-neon transition-all duration-300 flex flex-col items-center text-center"
           >
-            <div className="text-2xl mb-2 group-hover:scale-110 transition-transform">🛠️</div>
+            <div className="mb-2 group-hover:scale-110 transition-transform">
+              <span className="text-6xl filter drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">👨‍💻</span>
+            </div>
             <div className="font-bold text-white text-xl mb-1 font-mono">Я ИСПОЛНИТЕЛЬ</div>
             <div className="text-xs text-gray-500 font-mono">Создать смету, настроить рейты</div>
           </button>
@@ -323,9 +328,11 @@ function App() {
           {!showClientInput ? (
             <button
               onClick={() => setShowClientInput(true)}
-              className="group relative p-8 border border-zinc-800 bg-zinc-900/50 hover:bg-zinc-900 hover:border-cyber-tech transition-all duration-300"
+              className="group relative p-8 border border-zinc-800 bg-zinc-900/50 hover:bg-zinc-900 hover:border-cyber-tech transition-all duration-300 flex flex-col items-center text-center"
             >
-              <div className="text-2xl mb-2 group-hover:scale-110 transition-transform">👔</div>
+              <div className="mb-2 group-hover:scale-110 transition-transform">
+                <span className="text-6xl filter drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">🕵️‍♂️</span>
+              </div>
               <div className="font-bold text-white text-xl mb-1 font-mono">Я ЗАКАЗЧИК</div>
               <div className="text-xs text-gray-500 font-mono">Посмотреть смету по коду</div>
             </button>
@@ -437,6 +444,7 @@ function App() {
         <div className="flex justify-between items-start">
           <div onClick={() => setViewMode('landing')} className="cursor-pointer">
             <div className="flex items-center gap-3">
+              <img src="/logo.png" alt="Logo" className="w-8 h-8 object-contain" />
               <h1 className="text-2xl font-black font-mono text-white tracking-tighter glitch-text" data-text="ANTI-DOSHIRAK">
                 ANTI-DOSHIRAK
               </h1>
@@ -556,13 +564,11 @@ function App() {
         <div className="space-y-6">
           <label className="text-xs font-mono text-gray-500 uppercase tracking-wider block mb-4">МНОЖИТЕЛИ & ТРУДОЗАТРАТЫ</label>
 
-          {/* Client Name Input REMOVED - Moved to Settings */}
-
           {/* Hours Input Box */}
           <div className="bg-zinc-900 border border-zinc-800 p-4 flex justify-between items-center">
             <div className="flex flex-col">
               <span className="text-xs font-mono text-gray-400 uppercase tracking-wider">ЧАСЫ РАБОТЫ</span>
-              {isUrgencyLocked && <span className="text-[10px] text-cyber-alert mt-1 font-mono">⚠️ Pace Warning: High hours/content</span>}
+              {isUrgencyLocked && <div className="flex items-center gap-1 mt-1"><img src="/skull.png" alt="Warning" className="w-3 h-3" /><span className="text-[10px] text-cyber-alert font-mono">Pace Warning</span></div>}
             </div>
             <div className="w-24 h-10 border border-zinc-700 bg-black flex items-center justify-center">
               <input
@@ -591,7 +597,7 @@ function App() {
                   className={`
                        py-3 px-1 text-[10px] sm:text-xs font-mono border transition-all uppercase truncate
                        ${isSelected
-                      ? 'border-cyber-alert text-white bg-cyber-alert/10 shadow-[0_0_10px_rgba(255,0,60,0.3)]'
+                      ? 'border-cyber-alert text-white bg-cyber-alert/10'
                       : 'border-zinc-800 text-gray-500 hover:border-zinc-600 bg-black'
                     }
                      `}
@@ -617,12 +623,12 @@ function App() {
                        py-3 px-1 text-[10px] sm:text-xs font-mono border transition-all uppercase truncate relative
                        ${isLocked ? 'opacity-30 cursor-not-allowed border-zinc-900 bg-zinc-900' : ''}
                        ${isSelected && !isLocked
-                      ? 'border-cyber-tech text-white bg-cyber-tech/10 shadow-[0_0_10px_rgba(0,240,255,0.3)]'
+                      ? 'border-cyber-tech text-white bg-cyber-tech/10'
                       : !isLocked ? 'border-zinc-800 text-gray-500 hover:border-zinc-600 bg-black' : ''
                     }
                      `}
                 >
-                  {isLocked && <span className="absolute -top-1 -right-1 text-xs">🔒</span>}
+                  {isLocked && <div className="absolute -top-3 -right-3 w-6 h-6"><img src="/lock.png" alt="Lock" className="w-full h-full object-contain filter brightness-125" /></div>}
                   {label}
                 </button>
               );
@@ -630,9 +636,12 @@ function App() {
           </div>
 
           {isUrgencyLocked && (
-            <div className="text-[10px] text-cyber-alert font-mono border border-cyber-alert/50 bg-cyber-alert/10 p-2">
-              ⚠️ КОЭФФИЦИЕНТЫ СРОЧНОСТИ ОТКЛЮЧЕНЫ. <br />
-              Слишком большие трудозатраты для данного объема контента.
+            <div className="text-[10px] text-cyber-alert font-mono border border-cyber-alert/50 bg-cyber-alert/10 p-2 flex items-center gap-2">
+              <img src="/skull.png" alt="Warning" className="w-6 h-6 object-contain" />
+              <span>
+                ⚠️ КОЭФФИЦИЕНТЫ СРОЧНОСТИ ОТКЛЮЧЕНЫ. <br />
+                Слишком большие трудозатраты для данного объема контента.
+              </span>
             </div>
           )}
         </div>
@@ -642,7 +651,7 @@ function App() {
           <button
             onClick={() => setViewMode('proposal')}
             disabled={items.length === 0 && laborHours === 0}
-            className="w-full bg-cyber-neon text-black font-black text-xl py-6 font-mono uppercase tracking-widest hover:shadow-[0_0_25px_rgba(204,255,0,0.6)] transition-all disabled:opacity-30 disabled:shadow-none flex justify-between px-8 items-center"
+            className="w-full bg-cyber-neon text-black font-black text-xl py-6 font-mono uppercase tracking-widest hover:brightness-110 transition-all disabled:opacity-30 flex justify-between px-8 items-center"
           >
             <span>РАССЧИТАТЬ</span>
             <span>&gt;&gt;&gt;</span>

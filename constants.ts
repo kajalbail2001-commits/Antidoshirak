@@ -74,9 +74,9 @@ export const FALLBACK_DATA: PriceData = {
 };
 
 export const RISK_LABELS: Record<number, string> = {
-    [RiskLevel.LOW]: '🟢 Четкое ТЗ (Low Risk)',
-    [RiskLevel.MID]: '🟡 Есть вопросы (Mid Risk)',
-    [RiskLevel.HIGH]: '🔴 Полный Хаос (High Risk)'
+    [RiskLevel.LOW]: '🟢 Четкое ТЗ (Low)',
+    [RiskLevel.MID]: '🟡 Есть вопросы (Mid)',
+    [RiskLevel.HIGH]: '🔴 Полный Хаос (High)'
 };
 
 export const URGENCY_LABELS: Record<number, string> = {
