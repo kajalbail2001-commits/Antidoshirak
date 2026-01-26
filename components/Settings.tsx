@@ -108,7 +108,7 @@ const Settings: React.FC<SettingsProps> = ({ settings, setSettings, onClose }) =
                         <label className="text-[10px] text-gray-500 font-mono block mb-1">ЦЕЛЬ: ДОХОД В МЕСЯЦ (RUB)</label>
                         <input
                             type="number"
-                            value={settings.targetMonthlyIncome}
+                            value={settings.targetMonthlyIncome || ''}
                             onChange={(e) => handleNumberChange(e.target.value, 'targetMonthlyIncome')}
                             className="w-full bg-zinc-900 border border-zinc-700 text-white p-3 font-mono text-sm focus:border-cyber-alert outline-none"
                         />
@@ -118,7 +118,7 @@ const Settings: React.FC<SettingsProps> = ({ settings, setSettings, onClose }) =
                         <label className="text-[10px] text-gray-500 font-mono block mb-1">ДОСТУПНЫЕ ЧАСЫ В МЕСЯЦ</label>
                         <input
                             type="number"
-                            value={settings.billableHoursPerMonth}
+                            value={settings.billableHoursPerMonth || ''}
                             onChange={(e) => handleNumberChange(e.target.value, 'billableHoursPerMonth')}
                             className="w-full bg-zinc-900 border border-zinc-700 text-white p-3 font-mono text-sm focus:border-cyber-alert outline-none"
                         />
@@ -142,7 +142,7 @@ const Settings: React.FC<SettingsProps> = ({ settings, setSettings, onClose }) =
                         <label className="text-[10px] text-gray-500 font-mono block mb-1">СТОИМОСТЬ ВАШЕГО ЧАСА (RUB)</label>
                         <input
                             type="number"
-                            value={settings.hourlyRate}
+                            value={settings.hourlyRate || ''}
                             onChange={(e) => handleNumberChange(e.target.value, 'hourlyRate')}
                             className={`w-full bg-zinc-900 border ${isRateTooLow ? 'border-red-500' : 'border-zinc-700'} text-white p-3 font-mono text-sm focus:border-cyber-neon outline-none`}
                         />
@@ -172,7 +172,7 @@ const Settings: React.FC<SettingsProps> = ({ settings, setSettings, onClose }) =
                                 <label className="text-[10px] text-gray-500 font-mono block mb-1">ЦЕНА ТАРИФА (₽)</label>
                                 <input
                                     type="number"
-                                    value={settings.packagePriceUsd}
+                                    value={settings.packagePriceUsd || ''}
                                     onChange={(e) => handleNumberChange(e.target.value, 'packagePriceUsd')}
                                     className="w-full bg-black border border-zinc-700 text-white p-3 font-mono text-sm focus:border-cyber-tech outline-none"
                                 />
@@ -181,7 +181,7 @@ const Settings: React.FC<SettingsProps> = ({ settings, setSettings, onClose }) =
                                 <label className="text-[10px] text-gray-500 font-mono block mb-1">КОЛ-ВО МОЛНИЙ (⚡)</label>
                                 <input
                                     type="number"
-                                    value={settings.packageTokens}
+                                    value={settings.packageTokens || ''}
                                     onChange={(e) => handleNumberChange(e.target.value, 'packageTokens')}
                                     className="w-full bg-black border border-zinc-700 text-white p-3 font-mono text-sm focus:border-cyber-tech outline-none"
                                 />

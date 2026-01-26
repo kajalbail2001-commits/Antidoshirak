@@ -295,50 +295,48 @@ function App() {
 
   if (viewMode === 'landing') {
     return (
-      <div className="min-h-screen bg-cyber-black flex flex-col items-center justify-between p-4 animate-fade-in relative overflow-hidden">
+      <div className="min-h-screen bg-cyber-black flex flex-col items-center justify-center p-4 animate-fade-in relative overflow-hidden h-screen supports-[height:100dvh]:h-[100dvh]">
         <div className="absolute top-0 left-0 w-full h-full -z-10"></div>
 
-        <div className="h-[10vh]"></div>
-
-        <div className="text-center space-y-6 z-10 flex flex-col items-center">
-          <img src="/logo.png" alt="Logo" className="w-32 h-32 md:w-48 md:h-48 object-contain mb-4 filter drop-shadow-[0_0_15px_rgba(204,255,0,0.3)]" />
-          <h1 className="text-5xl md:text-8xl font-black font-mono text-white tracking-tighter glitch-text leading-none drop-shadow-[0_0_15px_rgba(255,0,60,0.5)]" data-text="ANTI-DOSHIRAK">
+        <div className="text-center space-y-4 z-10 flex flex-col items-center flex-shrink-0">
+          <img src="/logo.png" alt="Logo" className="w-24 h-24 md:w-48 md:h-48 object-contain mb-2 filter drop-shadow-[0_0_15px_rgba(204,255,0,0.3)]" />
+          <h1 className="text-4xl md:text-8xl font-black font-mono text-white tracking-tighter glitch-text leading-none drop-shadow-[0_0_15px_rgba(255,0,60,0.5)]" data-text="ANTI-DOSHIRAK">
             ANTI-DOSHIRAK
           </h1>
-          <div className="border border-cyber-tech text-cyber-tech bg-cyber-tech/10 px-4 py-1 text-sm md:text-base font-bold font-mono tracking-widest uppercase">
+          <div className="border border-cyber-tech text-cyber-tech bg-cyber-tech/10 px-3 py-0.5 text-xs md:text-base font-bold font-mono tracking-widest uppercase">
             v1.0 PROTOCOL
           </div>
-          <p className="text-cyber-dim font-mono text-xs md:text-sm tracking-widest uppercase mt-4">
+          <p className="text-cyber-dim font-mono text-[10px] md:text-sm tracking-widest uppercase mt-2">
             Creative Production Calculator
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl z-10 my-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-2xl z-10 my-8 flex-shrink-0">
           <button
             onClick={() => setViewMode('editor')}
-            className="group relative p-8 border border-zinc-800 bg-zinc-900/50 hover:bg-zinc-900 hover:border-cyber-neon transition-all duration-300 flex flex-col items-center text-center"
+            className="group relative p-6 border border-zinc-800 bg-zinc-900/50 hover:bg-zinc-900 hover:border-cyber-neon transition-all duration-300 flex flex-col items-center text-center active:scale-95"
           >
             <div className="mb-2 group-hover:scale-110 transition-transform">
-              <span className="text-6xl filter drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">👨‍💻</span>
+              <span className="text-5xl filter drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">👨‍💻</span>
             </div>
-            <div className="font-bold text-white text-xl mb-1 font-mono">Я ИСПОЛНИТЕЛЬ</div>
-            <div className="text-xs text-gray-500 font-mono">Создать смету, настроить рейты</div>
+            <div className="font-bold text-white text-lg mb-1 font-mono">Я ИСПОЛНИТЕЛЬ</div>
+            <div className="text-[10px] text-gray-500 font-mono">Создать смету, настроить рейты</div>
           </button>
 
           {!showClientInput ? (
             <button
               onClick={() => setShowClientInput(true)}
-              className="group relative p-8 border border-zinc-800 bg-zinc-900/50 hover:bg-zinc-900 hover:border-cyber-tech transition-all duration-300 flex flex-col items-center text-center"
+              className="group relative p-6 border border-zinc-800 bg-zinc-900/50 hover:bg-zinc-900 hover:border-cyber-tech transition-all duration-300 flex flex-col items-center text-center active:scale-95"
             >
               <div className="mb-2 group-hover:scale-110 transition-transform">
-                <span className="text-6xl filter drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">🕵️‍♂️</span>
+                <span className="text-5xl filter drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">🕵️‍♂️</span>
               </div>
-              <div className="font-bold text-white text-xl mb-1 font-mono">Я ЗАКАЗЧИК</div>
-              <div className="text-xs text-gray-500 font-mono">Посмотреть смету по коду</div>
+              <div className="font-bold text-white text-lg mb-1 font-mono">Я ЗАКАЗЧИК</div>
+              <div className="text-[10px] text-gray-500 font-mono">Посмотреть смету по коду</div>
             </button>
           ) : (
-            <div className="p-8 border border-cyber-tech bg-zinc-900 flex flex-col justify-center space-y-4 animate-fade-in">
-              <label className="text-xs text-cyber-tech font-mono">ВВЕДИТЕ КОД ИЛИ ССЫЛКУ:</label>
+            <div className="p-6 border border-cyber-tech bg-zinc-900 flex flex-col justify-center space-y-3 animate-fade-in">
+              <label className="text-[10px] text-cyber-tech font-mono">ВВЕДИТЕ КОД ИЛИ ССЫЛКУ:</label>
               <input
                 type="text"
                 autoFocus
@@ -347,15 +345,15 @@ function App() {
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && clientCode) loadSharedDataString(clientCode);
                 }}
-                className="bg-black border border-zinc-700 text-white p-2 font-mono text-sm outline-none focus:border-cyber-tech"
+                className="bg-black border border-zinc-700 text-white p-2 font-mono text-xs outline-none focus:border-cyber-tech"
                 placeholder="Любой ID или код..."
               />
               <div className="flex gap-2">
-                <button onClick={() => setShowClientInput(false)} className="flex-1 text-xs text-gray-500 font-mono py-2 hover:text-white">ОТМЕНА</button>
+                <button onClick={() => setShowClientInput(false)} className="flex-1 text-[10px] text-gray-500 font-mono py-2 hover:text-white">ОТМЕНА</button>
                 <button
                   onClick={() => loadSharedDataString(clientCode)}
                   disabled={!clientCode}
-                  className="flex-1 bg-cyber-tech text-black font-bold font-mono text-xs py-2 disabled:opacity-50 hover:bg-white transition-colors"
+                  className="flex-1 bg-cyber-tech text-black font-bold font-mono text-[10px] py-2 disabled:opacity-50 hover:bg-white transition-colors"
                 >
                   ОТКРЫТЬ
                 </button>
@@ -364,7 +362,7 @@ function App() {
           )}
         </div>
 
-        <div className="text-[10px] text-cyber-dim font-mono z-10 mb-8">
+        <div className="absolute bottom-4 text-[10px] text-cyber-dim font-mono z-10 opacity-60">
           <a href="https://t.me/neuroskam" target="_blank" rel="noopener noreferrer" className="hover:text-cyber-tech transition-colors">
             Powered by NeuroSkam
           </a>
