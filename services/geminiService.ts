@@ -2,7 +2,7 @@ import { Tool } from '../types';
 
 // MODELS
 // Using Qwen 2.5 Coder 32B as requested.
-const DEFAULT_MODEL = "nvidia/nemotron-3-nano-30b-a3b:free";
+const DEFAULT_MODEL = "deepseek/deepseek-v3.2";
 
 interface ParsedItem {
   tool_id: string;
