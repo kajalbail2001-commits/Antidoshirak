@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { ProjectItem, RiskLevel, UrgencyLevel } from '../types';
 import { AI_BUFFER_MULTIPLIER } from '../constants';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-import html2canvas from 'html2canvas';
+import html2pdf from 'html2pdf.js';
 
 declare global {
   interface Window {
@@ -94,54 +94,49 @@ const Proposal: React.FC<ProposalProps> = ({
   // --- ACTIONS (С МОЗГАМИ НОВОЙ ВЕРСИИ) ---
 
   // 1. СКАЧАТЬ PNG
+  const getPdfOpt = () => ({
+    margin: 0,
+    filename: `Estimate_${Date.now()}.pdf`,
+    image: { type: 'jpeg', quality: 1.0 },
+    html2canvas: { scale: 3, useCORS: true, backgroundColor: '#050505', ignoreElements: (el) => el.classList.contains('no-screenshot') },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  });
+
   const handleDownload = async () => {
     if (!proposalRef.current) return;
     setIsExporting(true);
     window.scrollTo(0, 0);
     await new Promise(r => setTimeout(r, 500));
     try {
-      const canvas = await html2canvas(proposalRef.current, {
-        backgroundColor: '#050505',
-        scale: 4,
-        useCORS: true,
-        allowTaint: true,
-        ignoreElements: (el) => el.classList.contains('no-screenshot')
-      });
-      const link = document.createElement('a');
-      link.download = `Estimate_${Date.now()}.png`;
-      link.href = canvas.toDataURL('image/png');
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch (e) { alert("Ошибка сохранения"); }
+      await html2pdf().set(getPdfOpt()).from(proposalRef.current).save();
+    } catch (e) { alert("Ошибка сохранения PDF"); }
     finally { setIsExporting(false); }
   };
 
   // 2. ОТПРАВИТЬ БОТУ
   const handleSendToBot = async () => {
     if (!proposalRef.current) return;
-    const tgInitData = window.Telegram?.WebApp?.initData;
-    if (!tgInitData) { alert("⚠️ Работает только в Telegram"); return; }
+    const tgInitData = window.Telegram?.WebApp?.initData || "DEV_MODE";
 
     setIsSending(true);
     window.scrollTo(0, 0);
     await new Promise(r => setTimeout(r, 500));
     try {
-      const canvas = await html2canvas(proposalRef.current, {
-        backgroundColor: '#050505',
-        scale: 4,
-        useCORS: true,
-        allowTaint: true,
-        ignoreElements: (el) => el.classList.contains('no-screenshot')
-      });
-      const imageBase64 = canvas.toDataURL('image/jpeg', 1.0);
+      const pdfBase64 = await html2pdf().set(getPdfOpt()).from(proposalRef.current).outputPdf('datauristring');
+      if (window.location.hostname === '192.168.0.3' || window.location.hostname === 'localhost') {
+         // Мы на тестовом сервере, просто скачаем файл, так как бэкенда тут нет
+         await html2pdf().set(getPdfOpt()).from(proposalRef.current).save();
+         alert("⚠️ Это локальный тест! Сервера отправки тут нет, поэтому я просто скачал PDF на устройство, чтобы ты оценил дизайн.");
+         setIsSending(false);
+         return;
+      }
       const response = await fetch('/.netlify/functions/send-estimate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ imageBase64, initData: tgInitData })
+        body: JSON.stringify({ pdfBase64, initData: tgInitData })
       });
       if (!response.ok) throw new Error("Сервер не ответил");
-      alert("✅ Смета отправлена в личку!");
+      alert("✅ Смета отправлена в личку (PDF)!");
     } catch (e: any) { alert("Ошибка: " + e.message); }
     finally { setIsSending(false); }
   };
@@ -201,7 +196,7 @@ const Proposal: React.FC<ProposalProps> = ({
   }
 
   return (
-    <div ref={proposalRef} className={`space-y-6 pb-32 animate-fade-in ${isClientMode ? 'pt-0' : ''} bg-cyber-black min-h-screen text-gray-300 print:bg-white print:text-black print:pb-0 print:space-y-4 print:block`}>
+    <div ref={proposalRef} className={`space-y-6 pb-32 pt-6 px-2 animate-fade-in ${isClientMode ? 'pt-0' : ''} bg-cyber-black min-h-screen text-gray-300 print:bg-white print:text-black print:pb-0 print:space-y-4 print:block`}>
       {showTextModal && (
         <div className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4 print:hidden backdrop-blur-sm no-screenshot">
           <div className="bg-zinc-900 border border-cyber-neon w-full max-w-2xl p-6 relative">
@@ -246,9 +241,9 @@ const Proposal: React.FC<ProposalProps> = ({
       </div>
 
       {/* HEADER ACTIONS */}
-      <div className={`flex items-center justify-between border-b border-cyber-dim pb-4 px-4 sm:px-0 no-screenshot`}>
+      <div className={`flex items-center justify-between border-b border-cyber-dim pb-4 px-4 sm:px-0`}>
         <h2 className="text-2xl font-mono text-white font-bold tracking-tighter">СМЕТА_ПРОЕКТА</h2>
-        <div className="flex gap-4 items-center">
+        <div className="flex gap-4 items-center no-screenshot">
           {isClientMode && onFork && <button type="button" onClick={onFork} className="text-xs font-mono text-cyber-tech hover:text-white underline uppercase">🛠 СОЗДАТЬ КОПИЮ</button>}
           {!isClientMode && onBack && <button type="button" onClick={onBack} className="text-xs font-mono text-cyber-dim hover:text-white underline">РЕДАКТОР</button>}
         </div>

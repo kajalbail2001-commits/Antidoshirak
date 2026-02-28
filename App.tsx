@@ -109,7 +109,14 @@ function App() {
       if (cleanStr.includes('data=')) {
         cleanStr = cleanStr.split('data=')[1];
       }
-      const decoded = JSON.parse(atob(cleanStr)) as SharedQuote;
+      // Support both old (plain atob) and new (UTF-8 safe) encoding
+      let jsonStr: string;
+      try {
+        jsonStr = decodeURIComponent(escape(atob(cleanStr)));
+      } catch {
+        jsonStr = atob(cleanStr);
+      }
+      const decoded = JSON.parse(jsonStr) as SharedQuote;
       loadSharedQuote(decoded);
     } catch (e) {
       // GUEST MODE FALLBACK
@@ -145,23 +152,30 @@ function App() {
   };
 
   const handleShare = () => {
-    const quote: SharedQuote = {
-      items,
-      laborHours,
-      hourlyRate: settings.hourlyRate,
-      risk,
-      urgency,
-      currencyRate: calculateCostPerToken(),
-      totalCost: calculateTotal(),
-      creatorName: settings.creatorName,
-      creatorTelegram: settings.creatorTelegram,
-      creatorAvatarUrl: settings.creatorAvatarUrl,
-      clientName: settings.clientName
-    };
-    const code = btoa(JSON.stringify(quote));
-    const url = `${window.location.origin}${window.location.pathname}?data=${code}`;
+    try {
+      const quote: SharedQuote = {
+        items,
+        laborHours,
+        hourlyRate: settings.hourlyRate,
+        risk,
+        urgency,
+        currencyRate: calculateCostPerToken(),
+        totalCost: calculateTotal(),
+        creatorName: settings.creatorName,
+        creatorTelegram: settings.creatorTelegram,
+        creatorAvatarUrl: settings.creatorAvatarUrl,
+        clientName: settings.clientName
+      };
+      const jsonStr = JSON.stringify(quote);
+      // Safe btoa that handles UTF-8 (cyrillic etc.)
+      const code = btoa(unescape(encodeURIComponent(jsonStr)));
+      const url = `${window.location.origin}${window.location.pathname}?data=${code}`;
 
-    setShareData({ url, code });
+      setShareData({ url, code });
+    } catch (err: any) {
+      alert(`Share error: ${err?.message || err}`);
+      console.error('handleShare failed:', err);
+    }
   };
 
   // New Fork/Copy functionality

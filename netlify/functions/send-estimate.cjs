@@ -10,18 +10,20 @@ exports.handler = async function(event, context) {
 
   try {
     const body = JSON.parse(event.body);
-    const { imageBase64, initData } = body;
+    const { pdfBase64, initData } = body;
     const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 
     if (!BOT_TOKEN) return { statusCode: 500, headers, body: JSON.stringify({ error: "No Bot Token" }) };
 
-    const params = new URLSearchParams(initData);
-    const userStr = params.get("user");
-    if (!userStr) return { statusCode: 400, headers, body: JSON.stringify({ error: "No User ID" }) };
-    const chatId = JSON.parse(userStr).id;
+    let chatId = "6590079602"; // Hardcoded Toni ID for local dev
+    if (initData && initData !== "DEV_MODE") {
+      const params = new URLSearchParams(initData);
+      const userStr = params.get("user");
+      if (userStr) chatId = JSON.parse(userStr).id;
+    }
 
     // Декодируем картинку
-    const cleanBase64 = imageBase64.replace(/^data:image\/\w+;base64,/, "");
+    const cleanBase64 = pdfBase64.replace(/^data:application\/pdf;base64,/, "").replace(/^data:.*,/, "");
     const binaryData = Buffer.from(cleanBase64, 'base64');
 
     // Собираем multipart форму вручную (чтобы не было зависимостей)
@@ -39,8 +41,8 @@ exports.handler = async function(event, context) {
       '',
       '🚀 Ваша смета (Anti-Doshirak)', // Текст сообщения
       dashDash + boundary,
-      'Content-Disposition: form-data; name="photo"; filename="estimate.jpg"',
-      'Content-Type: image/jpeg',
+      'Content-Disposition: form-data; name="document"; filename="estimate.pdf"',
+      'Content-Type: application/pdf',
       '',
       ''
     ].join(crlf);
@@ -49,7 +51,7 @@ exports.handler = async function(event, context) {
     const payload = Buffer.concat([Buffer.from(postDataStart), binaryData, Buffer.from(postDataEnd)]);
 
     // Отправляем (native fetch)
-    const tgResp = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
+    const tgResp = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendDocument`, {
       method: 'POST',
       headers: { 'Content-Type': 'multipart/form-data; boundary=' + boundary },
       body: payload
